@@ -1,6 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8; mode: python -*-
 
+#JoseJimenezRincon
+
+#JULIAN, ESTA ES LA ESTRUCTURA DEL PROGRAMA. NO INTENTE COMPILARLA, YA QUE NO FUNCIONARÁ.
+#ESTA ES LA ESTRUCTURA QUE TENGO PENSADA PARA CADA METODO.
+
 from flask import Flask, Api, Resource, make_response, jsonify
 import json
 
@@ -22,7 +27,7 @@ cart_information = {
 }
 
 wines_information = {
-	'id': automatic,
+	'wine_id': automatic,
 	'grade': float, #(Opcional, 12 por defecto)
 	'size': int,  #(Opcional, 75 por defecto)
 	'varietals': [],
@@ -38,6 +43,7 @@ class Client(Resource):
 
 	clients = []
 	carts = []
+	wines = []
 	
 	def newClient():
 		email = request.json['email']
@@ -119,30 +125,71 @@ class Cart(Resource):
 		items = request.json.get('items', clients[client_id]['items'])
 		for i in items:
 			make_response(jsonify({"items":items})
-		pass
 
 class Wines(Resource):
 	
-	def getWineProperties(self):
-		pass
+	def getWineProperties(self, wine_id):
+		grade = request.json.get('grade', wines[wine_id]['grade'])
+		size = request.json.get('size', wines[wine_id]['size'])
+		varietals = request.json.get('varietals', wines[wine_id]['varietals'])
+		do = request.json.get('do', wines[wine_id]['do'])
+		price = request.json.get('price', wines[wine_id]['price'])
+		name = request.json.get('name', wines[wine_id]['name'])
+		photo = request.json.get('photo', wines[wine_id]['photo'])
+		cask = request.json.get('cask', wines[wine_id]['cask'])
+		bottle = request.json.get('bottle', wines[wine_id]['bottle'])    
+		return make_response(jsonify({"grade":grade, "size":size, "varietals":varietals, "do":do, "price":price, "name":name, "photo":photo, "cask":cask, "bottle":bottle})
 
-	def addWine(self):
-		pass
+	def addWine(self, wine_id):
+		wine_id = int(max(wines_information.keys()).lstrip('wines')) + 1
+		wine_id = 'wine%i' % wine_id
+		grade = request.json['grade']
+		size = request.json['size']
+		varietals = request.json['varietals']
+		do = request.json['do']
+		price = request.json['price']
+		name = request.json['name']
+		photo = request.json['photo']
+		cask = request.json['cask']
+		bottle = request.json['bottle']
+
+		cart = { 'cart_id':cart_id, 'name':name, 'items':items }
+		wine = { 'wine_id':wine_id, 'grade':grade, 'size':size, 'varietals':varietals, 'do':do, 'price':price, 'name':name, 'photo':photo, 'cask':cask, 'bottle':bottle}
+
+		wines[wine_id].append(wine)
+		
+		return make_response(jsonify({"Wine added":name}), 200)
 
 	def updateWine(self):
+		wine = filter(lambda a: a['name'] == wine, items)
+		wine[0]['grade'] = request.json.get('grade', wine[0]['grade']
+		wine[0]['size'] = request.json.get('size', wine[0]['size']
+		wine[0]['varietals'] = request.json.get('varietals', wine[0]['varietals']
+		wine[0]['do'] = request.json.get('do', client[0]['do']
+		wine[0]['price'] = request.json.get('price', client[0]['price']
+		wine[0]['name'] = request.json.get('name', client[0]['name']
+		wine[0]['photo'] = request.json.get('photo', client[0]['photo']
+		wine[0]['cask'] = request.json.get('cask', client[0]['cask']
+		wine[0]['bottle'] = request.json.get('bottle', client[0]['bottle'] 
+		return make_response(jsonify({"name":name}), 200)
 		pass
 
 	def deleteWine(self):
-		pass
+		wine = filter(lambda a: a['name'] == name, items)
+		wines.remove(wine[0])
+		return make_response(jsonify({"deleted:"name}), 200)
 
 	def wineByType(self):
 		pass
 
 	def allWines(self):
-		pass
+		wines = request.json.get('wines', clients[client_id]['wines'])
+		for i in wines:
+			make_response(jsonify({"wines":wines}) 
 
 	def deleteWines(self):
-		pass
+		del wines
+		return make_response(jsonify({"deleted all wines"}))
 
 
 #Registra la ruta con el framework, utilizando el endpoint asignado.
