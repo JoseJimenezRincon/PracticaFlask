@@ -137,7 +137,8 @@ class Wines(Resource):
 		name = request.json.get('name', wines[wine_id]['name'])
 		photo = request.json.get('photo', wines[wine_id]['photo'])
 		cask = request.json.get('cask', wines[wine_id]['cask'])
-		bottle = request.json.get('bottle', wines[wine_id]['bottle'])    
+		bottle = request.json.get('bottle', wines[wine_id]['bottle'])
+    
 		return make_response(jsonify({"grade":grade, "size":size, "varietals":varietals, "do":do, "price":price, "name":name, "photo":photo, "cask":cask, "bottle":bottle})
 
 	def addWine(self, wine_id):
@@ -172,7 +173,6 @@ class Wines(Resource):
 		wine[0]['cask'] = request.json.get('cask', client[0]['cask']
 		wine[0]['bottle'] = request.json.get('bottle', client[0]['bottle'] 
 		return make_response(jsonify({"name":name}), 200)
-		pass
 
 	def deleteWine(self):
 		wine = filter(lambda a: a['name'] == name, items)
@@ -185,11 +185,13 @@ class Wines(Resource):
 	def allWines(self):
 		wines = request.json.get('wines', clients[client_id]['wines'])
 		for i in wines:
-			make_response(jsonify({"wines":wines}) 
+			make_response(jsonify({"wines":wines})
+		pass
 
 	def deleteWines(self):
 		del wines
 		return make_response(jsonify({"deleted all wines"}))
+		pass
 
 
 #Registra la ruta con el framework, utilizando el endpoint asignado.
