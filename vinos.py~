@@ -116,9 +116,6 @@ class Cart(Resource):
 		return make_response(jsonify({"items":items}), 200)
 
 	def getItems(self):
-		items = request.json.get('items', clients[client_id]['items'])
-		for i in items:
-			make_response(jsonify({"items":items})
 		pass
 
 class Wines(Resource):
