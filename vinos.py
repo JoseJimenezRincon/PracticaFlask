@@ -46,6 +46,9 @@ class Client(Resource):
 	wines = []
 	
 	def newClient():
+		if not request.json or not 'email' in request.json or not 'pass' in request.json:
+			abort(400)
+
 		email = request.json['email']
 		passw = request.json['pass']
 		carts = request.json['carts']
@@ -58,11 +61,15 @@ class Client(Resource):
 
 	def deleteClient():
 		client = filter(lambda a: a['email'] == email, clients)
+		if len(client) == 0:
+			abort(400)
 		clients.remove(client[0])
 		return make_response(jsonify({"deleted:"email}), 200)
 
 	def updateClient():
 		client = filter(lambda a: a['email'] == email, clients)
+		if len(client) == 0:
+			abort(404)
 		client[0]['email'] = request.json.get('email', client[0]['email']
 		client[0]['passw'] = request.json.get('passw', client[0]['passw']
 		client[0]['carts'] = request.json.get('carts', client[0]['carts']
@@ -71,19 +78,20 @@ class Client(Resource):
 		return make_response(jsonify({"email":email}), 200)
 
 	def getClientDetails(self, client_id):
-		email = request.json.get('email', client[client_id]['email'])
-		passw = request.json.get('passw', client[client_id]['passw'])
-		carts = request.json.get('carts', client[client_id]['carts'])
-		address = request.json.get('address', client[client_id]['address'])
-		phone = request.json.get('phone', client[client_id]['phone'])    
-		return make_response(jsonify({"email":email, "passw":passw, "carts":carts, "address":address, "phone":phone})
+		client = fliter(lambda t:t['email'] == email, clients)
+		if len(client) == 0:
+			abort(404)    
+		return make_response(jsonify({'clients':client[0]})
 
 	def getClients(self, clients):
 		email = request.json.get('email', clients[client_id]['email'])
 		for i in clients:
-			make_response(jsonify({"email":email})
+			make_response(jsonify({"email":email}))
+
 	
 	def addCart(self, client_id):
+		if len(client_id) == 0:
+			abort(404)
 		cart_id = int(max(cart_information.keys()).lstrip('clients')) + 1
 		cart_id = 'cart%i' % cart_id
 		name = request.json['name']
@@ -97,7 +105,14 @@ class Client(Resource):
 
 	def deleteCart(self, client_id):
 		client = filter(lambda a: a['cart'] == email, clients[client_id])
-		clients.remove(client[0])
+		if len(client_id) == 0:
+			abort(404)
+		
+		cart = filter(lambda b:b['id'] == cart_id, client[0]['carts'])
+		if len(cart) == 0:
+			abort(404)
+	
+		client[0]['cart'].remove(cart[0])
 		return make_response(jsonify({"deleted:"cart}), 200)
 
 class Cart(Resource):
@@ -129,19 +144,13 @@ class Cart(Resource):
 class Wines(Resource):
 	
 	def getWineProperties(self, wine_id):
-		grade = request.json.get('grade', wines[wine_id]['grade'])
-		size = request.json.get('size', wines[wine_id]['size'])
-		varietals = request.json.get('varietals', wines[wine_id]['varietals'])
-		do = request.json.get('do', wines[wine_id]['do'])
-		price = request.json.get('price', wines[wine_id]['price'])
-		name = request.json.get('name', wines[wine_id]['name'])
-		photo = request.json.get('photo', wines[wine_id]['photo'])
-		cask = request.json.get('cask', wines[wine_id]['cask'])
-		bottle = request.json.get('bottle', wines[wine_id]['bottle'])
+		wine = filter(lambda t:t['id'] == wine_id, wines)
+		if len(wine) == 0:
+			abort(404) 
     
-		return make_response(jsonify({"grade":grade, "size":size, "varietals":varietals, "do":do, "price":price, "name":name, "photo":photo, "cask":cask, "bottle":bottle})
+		return jsonify({'wines':wine[0]})
 
-	def addWine(self, wine_id):
+	def addWine(wine_id):
 		wine_id = int(max(wines_information.keys()).lstrip('wines')) + 1
 		wine_id = 'wine%i' % wine_id
 		grade = request.json['grade']
@@ -159,10 +168,12 @@ class Wines(Resource):
 
 		wines[wine_id].append(wine)
 		
-		return make_response(jsonify({"Wine added":name}), 200)
+		return make_response(jsonify({"Wine added":name}), 201)
 
-	def updateWine(self):
-		wine = filter(lambda a: a['name'] == wine, items)
+	def updateWine(wine_id):
+		wine = filter(lambda a: a['wine_id'] == wine_id, wines)
+		if len(wine) == 0:
+			abort(404)
 		wine[0]['grade'] = request.json.get('grade', wine[0]['grade']
 		wine[0]['size'] = request.json.get('size', wine[0]['size']
 		wine[0]['varietals'] = request.json.get('varietals', wine[0]['varietals']
@@ -174,24 +185,30 @@ class Wines(Resource):
 		wine[0]['bottle'] = request.json.get('bottle', client[0]['bottle'] 
 		return make_response(jsonify({"name":name}), 200)
 
-	def deleteWine(self):
-		wine = filter(lambda a: a['name'] == name, items)
+	def deleteWine(wine_id):
+		wine = filter(lambda a: a['wine_id'] == wine_id, wines
+		if len(wine) == 0:
+			abort(404)
 		wines.remove(wine[0])
 		return make_response(jsonify({"deleted:"name}), 200)
 
-	def wineByType(self):
-		pass
+	def wineByType(wine_type):
+		selected_wines = []
+
+		for wine in wines:
+			if wine['type'] == wine_type:
+				selected_wines.append(wine)
+
+		return make_response(jsonify({"selected_wines":selected_wines}), 200)
 
 	def allWines(self):
 		wines = request.json.get('wines', clients[client_id]['wines'])
 		for i in wines:
 			make_response(jsonify({"wines":wines})
-		pass
 
 	def deleteWines(self):
 		del wines
 		return make_response(jsonify({"deleted all wines"}))
-		pass
 
 
 #Registra la ruta con el framework, utilizando el endpoint asignado.
