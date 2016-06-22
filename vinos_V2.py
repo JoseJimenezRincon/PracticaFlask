@@ -49,7 +49,7 @@ def manager_cart_add(email):
 	else:
 		abort(404)
 @app.route('/clients/<path:email>/carts/<int:cart_id>', methods = ['DELETE'])
-def manager_cart_delete():
+def manager_cart_delete(email, cart_id):
 	if request.method == 'DELETE':
 		return deleteCart(email, cart_id)
 	else:
@@ -99,17 +99,18 @@ def addCart(email):
 	client = filter(lambda a:a['email'] == email, clients)
 	if len(client) == 0:
 		abort(404)
-	cart_id = request.json.get('id', randint(0,100))
+	#cart_id = request.json.get('cart_id', randint(0,123))
+	cart_id = request.json.get('cart_id',123)
 	name = request.json.get('name', '')
 	items = request.json.get('items', [])
 	clients[0]['carts'].append({'cart_id':cart_id, 'name':name, 'items':items })
-	return make_response(jsonify({"created":cart_id}), 201)
+	return make_response(jsonify({'created':cart_id}), 201)
 
 def deleteCart(email, cart_id):	
 	client = filter(lambda a:a['email'] == email, clients)
 	if len(client) == 0:
 		abort(404)	
-	cart = filter(lambda b:b['id'] == cart_id, client[0]['carts'])
+	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
 	if len(cart) == 0:
 		abort(404)
 	client[0]['carts'].remove(cart[0])
@@ -119,13 +120,21 @@ def deleteCart(email, cart_id):
 #-----------------------------CESTA-----------------------------#
 
 @app.route('/clients/<path:email>/carts/<int:cart_id>/items', methods = ['GET', 'POST'])
-def manager_items(email, cart_id, wine_id):
-	if request.method == 'POST':
-		return addItem(email, cart_id, wine_id)
-	elif request.method == 'GET':
+def manager_items(email, cart_id):
+	if request.method == 'GET':
 		return getItems(email, cart_id)
+	elif request.method == 'POST':
+		return addItem(email, cart_id)
 	else:
 		abort(404)
+
+
+#@app.route('/clients/<path:email>/carts/<int:cart_id>/items', methods = ['POST'])
+#def manager_add_items(email, cart_id, wine_id):
+#	if request.method == 'POST':
+#		return addItem(email, cart_id, wine_id)
+#	else:
+#		abort(404)
 
 @app.route('/clients/<path:email>/carts/<int:cart_id>/items/<int:item_id>', methods = ['DELETE', 'PUT'])
 def manager_item(email, cart_id, item_id):
@@ -136,24 +145,40 @@ def manager_item(email, cart_id, item_id):
 	else:
 		abort(404)
 
-def addItem(email, cart_id, wine_id):
+def addItem(email, cart_id):
 	client = filter(lambda a:a['email'] == email, clients)
 	if len(client) == 0:
 		abort(404)	
-	cart = filter(lambda b:b['id'] == cart_id, client[0]['carts'])
+	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
 	if len(cart) == 0:
 		abort(404)
-	wine = filter(lambda b:b['id'] == wine_id, wines)
+	new_item ={'id': request.json.get('wine_id',321)}
+	wine = filter(lambda b:b['wine_id'] == new_item['id'],wines)#
 	if len(wine) == 0:
 		abort(404)
-	cart[0]['items'].append(wine)
-	return make_response(jsonify({'added':item['id']}))
+	
+	cart[0]['items'].append(new_item)
+	return make_response(jsonify({'added':new_item['id']}), 201)
+	
+#def addItem(email, cart_id, wine_id):
+#	client = filter(lambda a:a['email'] == email, clients)
+#	if len(client) == 0:
+#		abort(404)	
+#	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
+#	if len(cart) == 0:
+#		abort(404)
+#	wine = filter(lambda b:b['wine_id'] == wine_id,wines)
+#	if len(wine) == 0:
+#		abort(404)
+#	
+#	cart[0]['items'].append(wine_id)
+#	return make_response(jsonify({'added':wine_id}), 201)
 
 def delItem(email, cart_id, item_id):
 	client = filter(lambda a:a['email'] == email, clients)
 	if len(client) == 0:
 		abort(404)	
-	cart = filter(lambda b:b['id'] == cart_id, client[0]['carts'])
+	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
 	if len(cart) == 0:
 		abort(404)
 	item = filter(lambda b:b['id'] == item_id, cart[0]['items'])
@@ -166,7 +191,7 @@ def updateItem(email, cart_id, item_id):
 	client = filter(lambda a:a['email'] == email, clients)
 	if len(client) == 0:
 		abort(404)	
-	cart = filter(lambda b:b['id'] == cart_id, client[0]['carts'])
+	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
 	if len(cart) == 0:
 		abort(404)
 	item = filter(lambda b:b['id'] == item_id, cart[0]['items'])
@@ -179,7 +204,7 @@ def getItems(email, cart_id):
 	client = filter(lambda a:a['email'] == email, clients)
 	if len(client) == 0:
 		abort(404)	
-	cart = filter(lambda b:b['id'] == cart_id, client[0]['carts'])
+	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
 	if len(cart) == 0:
 		abort(404)
 	return jsonify({'items':cart[0]['items']})
@@ -216,7 +241,7 @@ def manager_wine_type(wine_type):
 		abort(404)
 
 def getWineProperties(wine_id):
-	wine = filter(lambda t:t['id'] == wine_id, wines)
+	wine = filter(lambda t:t['wine_id'] == wine_id, wines)
 	if len(wine) == 0:
 		abort(404)
 	return jsonify({'wines':wine[0]})
@@ -224,7 +249,8 @@ def getWineProperties(wine_id):
 def addWine():
 	if not request.json or not 'name' in request.json:
 		abort(400)
-	wine_id = request.json.get('id', randint(0,100))
+	#wine_id = request.json.get('wine_id', randint(0,100))
+	wine_id = 321
 	wine_name = request.json['name']
 	wine_type = request.json['type']
 	wine_grade = request.json.get('grade', )
@@ -236,21 +262,21 @@ def addWine():
 	if wine_type == 'Tinto':
 		wine_cask = request.json.get('cask', )
 		wine_bottle = request.json.get('bottle', )
-		wine = {'wine_id':wine_id, 'grade':wine_grade, 'size':wine_size, 'varietals':wine_varietals, 'do':wine_do, 'price':wine_price, 'name':wine_name,
+		wine = {'wine_id':wine_id, 'grade':wine_grade, 'size':wine_size, 'varietals':wine_varietals, 'do':wine_do, 'price':wine_price, 'name':wine_name,'type':wine_type,
 			'photo':wine_photo, 'cask':wine_cask, 'bottle':wine_bottle}
 	else:	
-		wine = {'wine_id':wine_id, 'grade':wine_grade, 'size':wine_size, 'varietals':wine_varietals, 'do':wine_do, 'price':wine_price, 'name':wine_name,
+		wine = {'wine_id':wine_id, 'grade':wine_grade, 'size':wine_size, 'varietals':wine_varietals, 'do':wine_do, 'price':wine_price, 'name':wine_name,'type':wine_type,
 			'photo':wine_photo}
 	wines.append(wine)
-	return make_response(jsonify({"created":wine_id}), 201)
+	return make_response(jsonify({'created':wine_id}), 201)
 
 def updateWine(wine_id):
-	wine = filter(lambda t:t['id'] == wine_id, wines)
+	wine = filter(lambda t:t['wine_id'] == wine_id, wines)
 	if len(wine) == 0:
 		abort(404)
 	elif not request.json:
 		abort(400)
-	wine[0]['id'] = request.json.get('id', wine[0]['id'])
+	wine[0]['wine_id'] = request.json.get('wine_id', wine[0]['wine_id'])
 	wine[0]['grade'] = request.json.get('grade', wine[0]['grade'])
 	wine[0]['size'] = request.json.get('size', wine[0]['size'])
 	wine[0]['varietals'] = request.json.get('varietals', wine[0]['varietals'])
@@ -265,7 +291,7 @@ def updateWine(wine_id):
 	return make_response(jsonify({'updated':wine_id}), 200)
 		
 def deleteWine(wine_id):
-	wine = filter(lambda t:t['id'] == wine_id, wines)
+	wine = filter(lambda t:t['wine_id'] == wine_id, wines)
 	if len(wine) == 0:
 		abort(404)
 	wines.remove(wine[0])
