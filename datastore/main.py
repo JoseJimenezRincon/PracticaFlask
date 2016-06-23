@@ -45,7 +45,7 @@ def manager_cart_add(email):
 		return addCart(email)
 	else:
 		abort(404)
-@app.route('/clients/<path:email>/carts/<int:cart_id>', methods = ['DELETE'])
+@app.route('/clients/<path:email>/carts/<path:cart_id>', methods = ['DELETE'])
 def manager_cart_delete(email, cart_id):
 	if request.method == 'DELETE':
 		return deleteCart(email, cart_id)
@@ -117,7 +117,7 @@ def deleteCart(email, cart_id):
 
 #-----------------------------CESTA-----------------------------#
 
-@app.route('/clients/<path:email>/carts/<int:cart_id>/items', methods = ['GET', 'POST'])
+@app.route('/clients/<path:email>/carts/<path:cart_id>/items', methods = ['GET', 'POST'])
 def manager_items(email, cart_id, item_id):
 	if request.method == 'GET':
 		return getItems(email, cart_id)
@@ -126,15 +126,7 @@ def manager_items(email, cart_id, item_id):
 	else:
 		abort(404)
 
-
-#@app.route('/clients/<path:email>/carts/<int:cart_id>/items', methods = ['POST'])
-#def manager_add_items(email, cart_id, item_id):
-#	if request.method == 'POST':
-#		return addItem(email, cart_id, item_id)
-#	else:
-#		abort(404)
-
-@app.route('/clients/<path:email>/carts/<int:cart_id>/items/<int:item_id>', methods = ['DELETE', 'PUT'])
+@app.route('/clients/<path:email>/carts/<path:cart_id>/items/<path:item_id>', methods = ['DELETE', 'PUT'])
 def manager_item(email, cart_id, item_id):
 	if request.method == 'DELETE':
 		return delItem(email, cart_id, item_id)
@@ -142,84 +134,50 @@ def manager_item(email, cart_id, item_id):
 		return updateItem(email, cart_id, item_id)
 	else:
 		abort(404)
-
-
-#def addItem(email, cart_id, item_id):
-#	client = filter(lambda a:a['email'] == email, clients)
-#	if len(client) == 0:
-#		abort(404)	
-#	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
-#	if len(cart) == 0:
-#		abort(404)
-#	
-#	cart['items'].append(dict.copy(wines[item_id]))
-#	return make_response(jsonify({'added':item_id}))
-	
-	
-
-#def addItem(email, cart_id):
-#	client = filter(lambda a:a['email'] == email, clients)
-#	if len(client) == 0:
-#		abort(404)	
-#	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
-#	if len(cart) == 0:
-#		abort(404)
-#	new_item ={'id': request.json.get('wine_id',321)}
-#	wine = filter(lambda b:b['wine_id'] == new_item['id'],wines)#
-#	if len(wine) == 0:
-#		abort(404)
-#	
-#	cart[0]['items'].append(new_item)
-#	return make_response(jsonify({'added':new_item['id']}), 201)
 	
 def addItem(email, cart_id, item_id):
-	client = filter(lambda a:a['email'] == email, clients)
-	if len(client) == 0:
-		abort(404)	
-	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
-	if len(cart) == 0:
-		abort(404)
-	wine = filter(lambda b:b['item_id'] == item_id,wines)
-	if len(wine) == 0:
-		abort(404)
+	client_key = ndb.Key(Client, email)
+	cart_key = ndb.Key(Cart, cart_id)
 	
-	cart[0]['items'].append(wine)
+	item = Item(
+		parent = cart_key
+		item_key = item_id
+	)
+	
+	item.put() 	
+
 	return make_response(jsonify({'added':item_id}), 201)
 
 def delItem(email, cart_id, item_id):
-	client = filter(lambda a:a['email'] == email, clients)
-	if len(client) == 0:
-		abort(404)	
-	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
-	if len(cart) == 0:
-		abort(404)
-	item = filter(lambda b:b['id'] == item_id, cart[0]['items'])
-	if len(item) == 0:
-		abort(404)
-	cart[0]['items'].remove(item[0])
+	client_key = ndb.Key(Client, email)
+	cart_key = ndb.Key(Cart, cart_id)
+	item_key = ndb.Key(Wine, item_id)
+
+	client = client_key.get()
+	cart = client.carts.get(cart_key)
+	#cart = client.cart_key.get()
+	cart.items.remove(item_key)
+	item_key.delete()
+	
 	return make_response(jsonify({'deleted':item_id}), 200)
 
 def updateItem(email, cart_id, item_id):
-	client = filter(lambda a:a['email'] == email, clients)
-	if len(client) == 0:
-		abort(404)	
-	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
-	if len(cart) == 0:
-		abort(404)
-	item = filter(lambda b:b['id'] == item_id, cart[0]['items'])
-	if len(item) == 0:
-		abort(404)
-	item[0]['id'] = request.json.get('id', item[0]['id'])
-	return make_response(jsonify({'updated':item_id}), 200)
+	client_key = ndb.Key(Client, email)
+	cart_key = ndb.Key(Cart, cart_id)
+	item_key = ndb.Key(Wine, item_id)
+
+	item = item_key.get()
+	item.item_key = request.json.get("item_key", item.item_key)
+	item.put()
+	return make_response(jsonify({'updated':item.toJson()}), 200)
 
 def getItems(email, cart_id):
-	client = filter(lambda a:a['email'] == email, clients)
-	if len(client) == 0:
-		abort(404)	
-	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
-	if len(cart) == 0:
-		abort(404)
-	return jsonify({'items':cart[0]['items']})
+	client_key = ndb.Key(Client, email)
+	cart_key = ndb.Key(Cart, cart_id)
+	
+	items = Item.query(ancestor=cart_key)
+	items_json = Item.toJSONlist(items)
+	return make_response(jsonify({'items':items_json}), 200)
 
 #-----------------------------WINES-------------------------------#
 	
