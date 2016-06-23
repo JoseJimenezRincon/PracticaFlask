@@ -6,7 +6,7 @@
 from flask import Flask, jsonify, abort, make_response, request, url_for
 import json
 from google.appengine.ext import ndb
-#HAY QUE PONER LA CLASE DE LOS TIPOS DE ITEMS
+from definicionEstructuras import Client, Wine, Cart, Item, RedWines
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -219,53 +219,68 @@ def getWineProperties(wine_id):
 def addWine():
 	if not request.json or not 'name' in request.json:
 		abort(400)
-	#wine_id = request.json.get('wine_id', randint(0,100))
-	#wine_id = 321
-	wine_id = 0
-	wine_name = request.json['name']
-	wine_type = request.json['type']
-	wine_grade = request.json.get('grade', )
-	wine_size = request.json.get('size', )
-	wine_varietals = request.json.get('varietals', [])
-	wine_do = request.json.get('do', False)
-	wine_price = request.json.get('price', )
-	wine_photo = request.json.get('photo', )
+
+	wine = Wine(
+		wine_name = request.json['name']
+		wine_type = request.json['type']
+		wine_grade = request.json.get('grade', )
+		wine_size = request.json.get('size', )
+		wine_varietals = request.json.get('varietals', [])
+		wine_do = request.json.get('do', False)
+		wine_price = request.json.get('price', )
+		wine_photo = request.json.get('photo', )
+	)
+	wine_id = wine.put()
+
 	if wine_type == 'Tinto':
-		wine_cask = request.json.get('cask', )
-		wine_bottle = request.json.get('bottle', )
-		wine = {'wine_id':wine_id, 'grade':wine_grade, 'size':wine_size, 'varietals':wine_varietals, 'do':wine_do, 'price':wine_price, 'name':wine_name,'type':wine_type,
-			'photo':wine_photo, 'cask':wine_cask, 'bottle':wine_bottle}
-	else:	
-		wine = {'wine_id':wine_id, 'grade':wine_grade, 'size':wine_size, 'varietals':wine_varietals, 'do':wine_do, 'price':wine_price, 'name':wine_name,'type':wine_type,
-			'photo':wine_photo}
-	wines.append(wine)
-	return make_response(jsonify({'created':wine_id}), 201)
+		red_wine = RedWine(
+			parent = wine.key,
+			wine_cask = request.json.get('cask', )
+			wine_bottle = request.json.get('bottle', )
+		)
+		red_wine.put()
+
+	return make_response(jsonify({'created':wine.key.id()}), 201)
 
 def updateWine(wine_id):
-	wine = filter(lambda t:t['wine_id'] == wine_id, wines)
-	if len(wine) == 0:
-		abort(404)
-	elif not request.json:
-		abort(400)
-	wine[0]['wine_id'] = request.json.get('wine_id', wine[0]['wine_id'])
-	wine[0]['grade'] = request.json.get('grade', wine[0]['grade'])
-	wine[0]['size'] = request.json.get('size', wine[0]['size'])
-	wine[0]['varietals'] = request.json.get('varietals', wine[0]['varietals'])
-	wine[0]['do'] = request.json.get('do', wine[0]['do'])
-	wine[0]['price'] = request.json.get('price', wine[0]['price'])
-	wine[0]['name'] = request.json.get('name', wine[0]['name'])
-	wine[0]['photo'] = request.json.get('photo', wine[0]['photo'])
-	wine[0]['type'] = request.json.get('type', wine[0]['type'])
-	if wine[0]['type'] == 'Tinto':
-		wine[0]['cask'] = request.json.get('cask', wine[0]['cask'])
-		wine[0]['bottle'] = request.json.get('bottle', wine[0]['bottle'])
-	return make_response(jsonify({'updated':wine_id}), 200)
+	wine_key = ndb.Key(Wine, wine_id)
+	wine = wine_key.get()
+	
+	wine.wine_name  = request.json.get('name', wine.wine_name)
+	wine.wine_type = request.json.get('type', wine.wine_type)
+	wine.wine_grade = request.json.get('grade', wine.wine_grade)
+	wine.wine_size = request.json.get('size', wine.wine_size)
+	wine.wine_varietals = request.json.get('varietals', wine.wine_varietals)
+	wine.wine_do = request.json.get('do', wine.wine_do)
+	wine.wine_price = request.json.get('price', wine.wine_price)
+	wine.wine_photo = request.json.get('photo', wine.wine_photo)
+	
+	if wine.wine_type == "Tinto" and tinto is True: # ¿Tinto? Antes: SI | Después: SI
+        for red_wine in RedWines.query(ancestor=wine_key):
+            red_wine.cask   = request.json.get("cask",   red_wine.cask)
+            red_wine.bottle = request.json.get("bottle", red_wine.bottle)
+            red_wine.put()
+    	elif wine.wine_type == "Tinto" and tinto is False: # ¿Tinto? Antes: NO | Después: SI
+        new_red_wine = RedWines(
+            parent  = wine.key,
+            cask    = request.json.get("cask", 0),
+            bottle  = request.json.get("bottle", 0)
+        )
+        new_red_wine.put()
+    	elif wine.wine_type != "Tinto" and tinto is True: # ¿Tinto? Antes: SI | Después: NO
+        for red_wine in RedWines.query(ancestor=wine_key):
+            red_wine.key.delete()
+
+	return make_response(jsonify({'updated':wine.toJson()}), 200)
 		
 def deleteWine(wine_id):
-	wine = filter(lambda t:t['wine_id'] == wine_id, wines)
-	if len(wine) == 0:
-		abort(404)
-	wines.remove(wine[0])
+	wine_key = ndb.Key(Wine, wine_id)
+	wine = wine_key.get()
+	
+    	if wine.wine_type == "Tinto":
+        	for red_wine in RedWines.query(ancestor=wine_key):
+            	red_wine.key.delete()
+	wine_key.delete()
 	return make_response(jsonify({'deleted':wine_id}), 200)
 
 def wineByType(wine_type):
@@ -273,18 +288,39 @@ def wineByType(wine_type):
 	for wine in wines:
 		if wine['type'] == wine_type:
 			selected_wines.append(wine)
-	return make_response(jsonify({'selected_wines':selected_wines}), 200)
+	return make_response(jsonify({'selected_wines':selected_wines}), 200)		
 
-def allWines():
-	return make_response(jsonify({'wines':wines}), 200)
+@app.route('/search')
+def search():
+    name = request.args.get('name',"", type=str)
+    wine_type = request.args.get('type',"", type=str)
+    low_price = request.args.get('low_price',"0.0", type=str)
+    high_price = request.args.get('high_price',"99999999.9", type=str)
 
-def deleteWines():
-	del wines
-	return make_response(jsonify({'wines':wines}), 200)		
+    if name:
+        return getWineByName(name)
+    elif wine_type:
+        return getWineByType(wine_type)
+    elif low_price or high_price:
+        return getWinesBetweenPrices(low_price, high_price)
+    else:
+        abort(404)
 
+def getWinesByName(name):
+    wines_json = Wines.toJSONlist(
+        Wines.query(Wines.name==name))
+    return make_response(jsonify({"wines":wines_json}), 200)
 
-if __name__ == '__main__':
-	app.run(debug=True, port=8000)
+def getWinesByType(wine_type):
+    wines_json = Wines.toJSONlist(
+        Wines.query(Wines.wine_type==wine_type))
+    return make_response(jsonify({"wines":wines_json}), 200)
+
+def getWinesBetweenPrices(low_price, high_price):
+    wines_json = Wines.toJSONlist(
+        ndb.gql("SELECT * FROM Wines " +
+                "WHERE price <= "+high_price+" AND price >= "+low_price))
+    return make_response(jsonify({"wines":wines_json}), 200)
 		
 	
 	
