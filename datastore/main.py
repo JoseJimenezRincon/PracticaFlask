@@ -5,14 +5,11 @@
 
 from flask import Flask, jsonify, abort, make_response, request, url_for
 import json
-from random import randint
+from google.appengine.ext import ndb
+#HAY QUE PONER LA CLASE DE LOS TIPOS DE ITEMS
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
-
-clients = []
-carts = []
-wines = []
 
 @app.errorhandler(400)
 def bad_request(error):
@@ -59,61 +56,62 @@ def newClient():
 	if not request.json or not 'email' in request.json or not 'pass' in request.json:
 		abort(400)
 	
-	email = request.json['email']
-	password = request.json['pass']
-	carts = request.json.get('carts', [])
-	address = request.json.get('address', '')
-	phone = request.json.get('phone', )
+	client = Client(
+	email = request.json['email'],
+	password = request.json['pass'],
+	carts = request.json.get('carts', []),
+	address = request.json.get('address', ''),
+	phone = request.json.get('phone', ))
 
-	clients.append({'email':email, 'pass':password, 'carts':carts, 'address':address, 'phone':phone})
-	return make_response(jsonify({"created":email}), 201)
+	client.put()
+	
+	return make_response(jsonify({'created':client.key.id()}), 201)
 
 def deleteClient(email):
-	client = filter(lambda a:a['email'] == email, clients)
-	if len(client) == 0:
-		abort(404)
-	clients.remove(client[0])
+	key = ndb.Key(Client, email)
+	key.delete()	
 	return make_response(jsonify({"deleted":email}), 200)
 
 def updateClient(email):
-	client = filter(lambda a:a['email'] == email, clients)
-	if len(client) == 0:
-		abort(404)
-	client[0]['email'] = request.json.get('email', client[0]['email'])
-        client[0]['pass'] = request.json.get('pass', client[0]['pass'])
-        client[0]['carts'] = request.json.get('carts', client[0]['carts'])
-        client[0]['address'] = request.json.get('address', client[0]['address'])
-        client[0]['phone'] = request.json.get('phone', client[0]['phone'])
-	return make_response(jsonify({"updated":email}), 200)
+	if not request.json:
+		abort(400)
+		
+	key = ndb.Key(Client, email)
+	client = key.get()
+	
+	
+	client.email = request.json.get('email', client.email)
+        client.password = request.json.get('pass', client.password)
+        client.carts = request.json.get('carts', client.carts)
+        client.address = request.json.get('address', client.address)
+        client.phone = request.json.get('phone', client.phone)
+
+	client.put()
+	return make_response(jsonify({'updated':client.to_dict()}), 200)
 
 def getClientDetails(email):
-	client = filter(lambda a:a['email'] == email, clients)
-	if len(client) == 0:
-		abort(404)
-	return make_response(jsonify({'clients':client[0]}))
+	key = ndb.Key(Client, email)
+	client = key.get().toJson()	
+	return make_response(jsonify({'clients':client}))
 
 def getClients():
-	return make_response(jsonify({'clients':clients}), 200)
+	return make_response(jsonify({'clients':Clients.getAll()}), 200)
 
-def addCart(email): 
-	client = filter(lambda a:a['email'] == email, clients)
-	if len(client) == 0:
-		abort(404)
-	#cart_id = request.json.get('cart_id', randint(0,123))
-	cart_id = request.json.get('cart_id',123)
-	name = request.json.get('name', '')
-	items = request.json.get('items', [])
-	clients[0]['carts'].append({'cart_id':cart_id, 'name':name, 'items':items })
-	return make_response(jsonify({'created':cart_id}), 201)
+def addCart(email):
+	key = ndb.Key(Client, email) 
+	cart = Cart(
+		parent = key,
+		name = request.json.get("name", "")
+	)
+	cart.put()
+	return make_response(jsonify({'created':cart.key.id()}), 201)
 
-def deleteCart(email, cart_id):	
-	client = filter(lambda a:a['email'] == email, clients)
-	if len(client) == 0:
-		abort(404)	
-	cart = filter(lambda b:b['cart_id'] == cart_id, client[0]['carts'])
-	if len(cart) == 0:
-		abort(404)
-	client[0]['carts'].remove(cart[0])
+def deleteCart(email, cart_id):
+	client_key = ndb.Key(Client, email)
+	cart_key = ndb.Key(Cart,vcart_id)
+	client = client_key.get()
+	client.carts.remove(cart_key)
+	cart_Key.delete()
 	return	make_response(jsonify({'deleted':cart_id}), 200)
 
 
