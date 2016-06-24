@@ -1,0 +1,45 @@
+/clients
+
+	POST	->	+newClient()
+	GET	->	+getClients()
+
+/clients/client{id}
+
+	GET	->	+getClientDetails()
+	PUT	->	+updateClient()
+	DELETE	-> 	+deleteClient()
+
+/clients/client{id}/carts
+
+	POST	->	+addCart()
+	
+/clients/client{id}/carts/cart{id}
+
+	DELETE	->	+deleteCart()
+
+/clients/client{id}/carts/cart{id}/items
+	
+	POST	->	+addItem()
+	GET	->	+getItems()
+
+/clients/client{id}/carts/cart{id}/items/item{id}
+
+	DELETE	->	+deleteItem()
+	PUT	->	+updateItem()
+
+/wines
+	
+	POST	->	+addWine()
+	GET	->	+allWines()
+	DELETE	->	+deleteWines()
+	
+/wines/wine{id}
+	
+	GET	->	+getWineProperties()
+	PUT	->	+updateWine()
+	DELETE 	->	+deleteWine()
+	
+/wines/type{id}
+
+	GET	->	+winesByType()
+
