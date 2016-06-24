@@ -83,7 +83,7 @@ def updateClient(email):
         client.phone = request.json.get('phone', client.phone)
 	client.put()
 	memcache.flush_all()
-	return make_response(jsonify({'updated':email}), 200)
+	return make_response(jsonify({'updated':client.toJson()}), 200)
 
 def getClientDetails(id_client):
 	email = memcache.get(id_client)
@@ -145,66 +145,73 @@ def deleteCart(cart_id):
 #-----------------------------CESTA-----------------------------#
 
 @app.route('/clients/<path:email>/carts/<path:cart_id>/items', methods = ['GET', 'POST'])
-def manager_items(email, cart_id, item_id):
+def manager_items(cart_id):
 	if request.method == 'GET':
-		return getItems(email, cart_id)
+		return getItems(cart_id)
 	elif request.method == 'POST':
-		return addItem(email, cart_id, item_id)
+		return addItem(cart_id)
 	else:
 		abort(404)
+
+
+def addItem(cart_id):
+	if not request.json or not 'name' in request.json:
+		abort(400)
+	name = request.json['name']
+	try:
+		cart_key = ndb.Key(urlsafe=cart_id)
+	except:
+		abort(404)
+	new_item = Items(
+		parent = cart_key
+		name = name
+	)
+	item_id = new_item.put()
+	return make_response(jsonify({'added':item_id.urlsafe()}), 201)
+
+
+def getItems(cart_id):
+	auxJSON = []
+	try:
+		cart_key = ndb.Key(urlsafe=cart_id) #Entiendo que el cart_id es único.
+	except:
+		abort(404)
+	ItemList = Items.query(ancestor=cart_key)
+	auxJSON = Items.toJSONlist(ItemList)
+	return make_response(jsonify({'items':auxJSON}), 200)
+
 
 @app.route('/clients/<path:email>/carts/<path:cart_id>/items/<path:item_id>', methods = ['DELETE', 'PUT'])
-def manager_item(email, cart_id, item_id):
+def manager_item(item_id):
 	if request.method == 'DELETE':
-		return delItem(email, cart_id, item_id)
+		return delItem(item_id)
 	elif request.method == 'PUT':
-		return updateItem(email, cart_id, item_id)
+		return updateItem(item_id)
 	else:
 		abort(404)
 	
-def addItem(email, cart_id, item_id):
-	client_key = ndb.Key(Client, email)
-	cart_key = ndb.Key(Cart, cart_id)
-	
-	item = Item(
-		parent = cart_key
-		item_key = item_id
-	)
-	
-	item.put() 	
 
-	return make_response(jsonify({'added':item_id}), 201)
-
-def delItem(email, cart_id, item_id):
-	client_key = ndb.Key(Client, email)
-	cart_key = ndb.Key(Cart, cart_id)
-	item_key = ndb.Key(Wine, item_id)
-
-	client = client_key.get()
-	cart = client.carts.get(cart_key)
-	#cart = client.cart_key.get()
-	cart.items.remove(item_key)
+def delItem(item_id):
+	try:
+		item_key = ndb.Key(urlsafe=item_id) #Entiendo que el item_id es único.
+	except:
+		abort(404)
 	item_key.delete()
-	
+	memcache.delete(item_id)
 	return make_response(jsonify({'deleted':item_id}), 200)
 
-def updateItem(email, cart_id, item_id):
-	client_key = ndb.Key(Client, email)
-	cart_key = ndb.Key(Cart, cart_id)
-	item_key = ndb.Key(Wine, item_id)
-
+def updateItem(item_id):
+	try:
+		item_key = ndb.Key(urlsafe=item_id)
+	except:
+		abort(404)
 	item = item_key.get()
-	item.item_key = request.json.get("item_key", item.item_key)
+	item.parent = request.json.get('parent', item.parent)
+	item.name = request.json.get('name', item.name)
 	item.put()
+	memcache.flush_all()
 	return make_response(jsonify({'updated':item.toJson()}), 200)
 
-def getItems(email, cart_id):
-	client_key = ndb.Key(Client, email)
-	cart_key = ndb.Key(Cart, cart_id)
-	
-	items = Item.query(ancestor=cart_key)
-	items_json = Item.toJSONlist(items)
-	return make_response(jsonify({'items':items_json}), 200)
 
 #-----------------------------WINES-------------------------------#
 	
