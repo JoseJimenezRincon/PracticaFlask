@@ -81,8 +81,8 @@ def updateClient(client_id):
         client.phone = request.json.get('phone', client.phone)
 	client.put()
 	memcache.flush_all()
-	return make_response(jsonify({'updated':client.toJson()}), 200)
-
+	return make_response(jsonify({'updated':client.to_dict()}), 200)
+#
 def getClientDetails(client_id):
 	email = memcache.get(client_id)
 	if email = None:
@@ -93,10 +93,10 @@ def getClientDetails(client_id):
 		client = client_key.get()
 		email = client.email
 		password = client.password
-		carts = client.carts
+		carts =	 client.queryToName()
 		address = client.address
 		phone = client.phone	
-	return make_response(jsonify({"client_id":client_id, "pass":password, "carts":carts, "address":address, "phone":phone}))
+	return make_response(jsonify({"email":email, "pass":password, "carts":carts, "address":address, "phone":phone}))
 
 
 @app.route('/clients/<path:client_id>/carts', methods = ['POST'])
@@ -205,12 +205,11 @@ def updateItem(item_id):
 		item_key = ndb.Key(urlsafe=item_id)
 	except:
 		abort(404)
-	item = item_key.get()
-	item.parent = request.json.get('parent', item.parent)
+	item = item_key.get()	
 	item.name = request.json.get('name', item.name)
 	item.put()
 	memcache.flush_all()
-	return make_response(jsonify({'updated':item.toJson()}), 200)
+	return make_response(jsonify({'updated':item.to_dict()}), 200)
 
 
 #-----------------------------WINES-------------------------------#
@@ -257,8 +256,8 @@ def wineByName():
 def wineBetweenPrices():
 	if not request.args.get('min') or not request.args.get('max'):
 		abort(400)
-	minimum = request.args.get('min')
-	maximum = request.args.get('max')
+	minimum = float(request.args.get('min'))
+	maximum = float(request.args.get('max'))
 	auxJSON = [] 
 	winesBetweenPrices = Wines.query(Wines.price >= minimum, Wines.price < maximum)
 	auxJSON = wines.toJSONList(winesBetweenPrices)
@@ -360,7 +359,7 @@ def updateWine(wine_id):
 			red_wine.bottle = request.json.get('bottle', red_wine.bottle)
 		red_wine.put()
 	memcache.flush_all()	
-	return make_response(jsonify({'updated':wine.toJson()}), 200)
+	return make_response(jsonify({'updated':wine.to_dist()}), 200)
 
 	
 	
