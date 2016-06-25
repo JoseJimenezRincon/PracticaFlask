@@ -32,47 +32,45 @@ def manager_clients():
 def newClient():
 	if not request.json or not 'email' in request.json or not 'pass' in request.json:
 		abort(400)
-	email = request.json['title']
+	email = request.json['email']
 	password = request.json['pass']
-	
-	client = Client(
+	client = Clients(
 		email = email,
 		password = password,
 		carts = request.json.get('carts', []),
 		address = request.json.get('address', ),
 		phone = request.json.get('phone', ))
-
-	idClient = client.put()
+	client_id = client.put()
 	memcache.flush_all()
-	return make_response(jsonify({'created':idClient.urlsafe()}), 201)
+	return make_response(jsonify({'created':client_id.urlsafe()}), 201)
 
 def getClients():
 	return make_response(jsonify({'clients':Clients.all()}), 200)
 
 
-@app.route('/clients/<path:email>', methods = ['DELETE', 'PUT', 'GET'])
-def manager_client(email):
+@app.route('/clients/<path:client_id>', methods = ['DELETE', 'PUT', 'GET'])
+def manager_client(client_id):
 	if request.method == 'DELETE':
-		return deleteClient(email)
+		return deleteClient(client_id)
 	elif request.method == 'PUT':
-		return updateClient(email)
+		return updateClient(client_id)
 	elif request.method == 'GET':
-		return getClientDetails(email)
+		return getClientDetails(client_id)
 	else:
 		abort(404)
 
-def deleteClient(email):
+def deleteClient(client_id):
 	try:
-		client_key = ndb.Key(urlsafe=email)
+		client_key = ndb.Key(urlsafe=client_id)
 	except:
 		abort(404)
 	client_key.delete()
-	memcache.delete(email)	
-	return make_response(jsonify({"deleted":email}), 200)
+	memcache.delete(client_id)	
+	return make_response(jsonify({"deleted":client_id}), 200)
 
-def updateClient(email):
+def updateClient(client_id):
 	try:
-		client_key = ndb.Key(urlsafe=email)
+		client_key = ndb.Key(urlsafe=client_id)
 	except:
 		abort(404)
 	client = client_key.get()
@@ -85,11 +83,11 @@ def updateClient(email):
 	memcache.flush_all()
 	return make_response(jsonify({'updated':client.toJson()}), 200)
 
-def getClientDetails(id_client):
-	email = memcache.get(id_client)
+def getClientDetails(client_id):
+	email = memcache.get(client_id)
 	if email = None:
 		try:
-			client_key = ndb.Key(urlsafe=id_client)
+			client_key = ndb.Key(urlsafe=client_id)
 		except:
 			abort(404)
 		client = client_key.get()
@@ -97,23 +95,23 @@ def getClientDetails(id_client):
 		password = client.password
 		carts = client.carts
 		phone = client.phone	
-	return make_response(jsonify({"email":email, "pass":password, "carts":carts, "phone":phone}))
+	return make_response(jsonify({"client_id":client_id, "pass":password, "carts":carts, "phone":phone}))
 
 
-@app.route('/clients/<path:email>/carts', methods = ['POST'])
-def manager_cart_add(email):
+@app.route('/clients/<path:client_id>/carts', methods = ['POST'])
+def manager_cart_add(client_id):
 	if request.method == 'POST':
-		return addCart(email)
+		return addCart(client_id)
 	else:
 		abort(404)
 
 
-def addCart(id_client):	
+def addCart(client_id):	
 	if not request.json or not 'name' in request.json:
 		abort(400)
 	name = request.json['name']
 	try:
-		client_key = ndb.Key(urlsafe=id_client)
+		client_key = ndb.Key(urlsafe=client_id)
 	except:
 		abort(404)
 	new_cart = Carts(
@@ -124,7 +122,7 @@ def addCart(id_client):
 	return make_response(jsonify({'created':cart_id.urlsafe())}), 201)
 
 
-@app.route('/clients/<path:email>/carts/<path:cart_id>', methods = ['DELETE'])
+@app.route('/clients/<path:client_id>/carts/<path:cart_id>', methods = ['DELETE'])
 def manager_cart_delete(cart_id):
 	if request.method == 'DELETE':
 		return deleteCart(cart_id)
@@ -144,7 +142,7 @@ def deleteCart(cart_id):
 
 #-----------------------------CESTA-----------------------------#
 
-@app.route('/clients/<path:email>/carts/<path:cart_id>/items', methods = ['GET', 'POST'])
+@app.route('/clients/<path:client_id>/carts/<path:cart_id>/items', methods = ['GET', 'POST'])
 def manager_items(cart_id):
 	if request.method == 'GET':
 		return getItems(cart_id)
@@ -181,7 +179,7 @@ def getItems(cart_id):
 	return make_response(jsonify({'items':auxJSON}), 200)
 
 
-@app.route('/clients/<path:email>/carts/<path:cart_id>/items/<path:item_id>', methods = ['DELETE', 'PUT'])
+@app.route('/clients/<path:client_id>/carts/<path:cart_id>/items/<path:item_id>', methods = ['DELETE', 'PUT'])
 def manager_item(item_id):
 	if request.method == 'DELETE':
 		return delItem(item_id)
