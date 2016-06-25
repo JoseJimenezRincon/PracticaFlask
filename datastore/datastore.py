@@ -94,8 +94,9 @@ def getClientDetails(client_id):
 		email = client.email
 		password = client.password
 		carts = client.carts
+		address = client.address
 		phone = client.phone	
-	return make_response(jsonify({"client_id":client_id, "pass":password, "carts":carts, "phone":phone}))
+	return make_response(jsonify({"client_id":client_id, "pass":password, "carts":carts, "address":address, "phone":phone}))
 
 
 @app.route('/clients/<path:client_id>/carts', methods = ['POST'])
@@ -318,7 +319,6 @@ def manager_wine(wine_id):
 
 def getWineProperties(wine_id):
 	name = memcache.get(wine_id)
-	auxJSON = []
 	if name = None:
 		try:
 			wine_key = ndb.Key(urlsafe=wine_id)
@@ -337,7 +337,7 @@ def getWineProperties(wine_id):
 			for red_wine in RedWines.query(ancestor=wine_key):
 				cask = red_wine.cask
 				bottle = red_wine.bottle
-	return jsonify({'name':name, 'type':wine_type, 'grade':grade, 'size':size, 'varietals':varietals, 'do':do, 'price':price, 'photo':photo,'cask':cask, 'bottle':bottle})
+	return make_response(jsonify({'name':name, 'type':wine_type, 'grade':grade, 'size':size, 'varietals':varietals, 'do':do, 'price':price, 'photo':photo,'cask':cask, 'bottle':bottle}))
 
 def updateWine(wine_id):
 	try:
@@ -362,48 +362,6 @@ def updateWine(wine_id):
 	memcache.flush_all()	
 	return make_response(jsonify({'updated':wine.toJson()}), 200)
 
-
-@app.route('/wines/<path:wine_type>', methods = ['GET'])
-def manager_wine_type(wine_type):
-	if request.method == 'GET':
-		return wineByType(wine_type)
-	else:
-		abort(404)
-
-
-
-@app.route('/search')
-def search():
-    name = request.args.get('name',"", type=str)
-    wine_type = request.args.get('type',"", type=str)
-    low_price = request.args.get('low_price',"0.0", type=str)
-    high_price = request.args.get('high_price',"99999999.9", type=str)
-
-    if name:
-        return getWineByName(name)
-    elif wine_type:
-        return getWineByType(wine_type)
-    elif low_price or high_price:
-        return getWinesBetweenPrices(low_price, high_price)
-    else:
-        abort(404)
-
-def getWinesByName(name):
-    wines_json = Wines.toJSONlist(
-        Wines.query(Wines.name==name))
-    return make_response(jsonify({"wines":wines_json}), 200)
-
-def getWinesByType(wine_type):
-    wines_json = Wines.toJSONlist(
-        Wines.query(Wines.wine_type==wine_type))
-    return make_response(jsonify({"wines":wines_json}), 200)
-
-def getWinesBetweenPrices(low_price, high_price):
-    wines_json = Wines.toJSONlist(
-        ndb.gql("SELECT * FROM Wines " +
-                "WHERE price <= "+high_price+" AND price >= "+low_price))
-    return make_response(jsonify({"wines":wines_json}), 200)
-		
 	
 	
 	
