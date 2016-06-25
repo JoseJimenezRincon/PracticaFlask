@@ -85,17 +85,16 @@ def updateClient(client_id):
 #
 def getClientDetails(client_id):
 	email = memcache.get(client_id)
-	if email = None:
-		try:
-			client_key = ndb.Key(urlsafe=client_id)
-		except:
-			abort(404)
-		client = client_key.get()
-		email = client.email
-		password = client.password
-		carts =	 client.queryToName()
-		address = client.address
-		phone = client.phone	
+	try:
+		client_key = ndb.Key(urlsafe=client_id)
+	except:
+		abort(404)
+	client = client_key.get()
+	email = client.email
+	password = client.password
+	carts =	 client.queryToName()
+	address = client.address
+	phone = client.phone	
 	return make_response(jsonify({"email":email, "pass":password, "carts":carts, "address":address, "phone":phone}))
 
 
@@ -116,11 +115,10 @@ def addCart(client_id):
 	except:
 		abort(404)
 	new_cart = Carts(
-		parent = client_key
-		name = name	
-	}
+		parent = client_key,
+		name = name)
 	cart_id = new_cart.put()
-	return make_response(jsonify({'created':cart_id.urlsafe())}), 201)
+	return make_response(jsonify({'created':cart_id.urlsafe()}), 201)
 
 
 @app.route('/clients/<path:client_id>/carts/<path:cart_id>', methods = ['DELETE'])
@@ -162,7 +160,7 @@ def addItem(cart_id):
 	except:
 		abort(404)
 	new_item = Items(
-		parent = cart_key
+		parent = cart_key,
 		name = name
 	)
 	item_id = new_item.put()
@@ -172,7 +170,7 @@ def addItem(cart_id):
 def getItems(cart_id):
 	auxJSON = []
 	try:
-		cart_key = ndb.Key(urlsafe=cart_id) #Entiendo que el cart_id es único.
+		cart_key = ndb.Key(urlsafe=cart_id) #Entiendo que el cart_id es unico.
 	except:
 		abort(404)
 	ItemList = Items.query(ancestor=cart_key)
@@ -192,7 +190,7 @@ def manager_item(item_id):
 
 def delItem(item_id):
 	try:
-		item_key = ndb.Key(urlsafe=item_id) #Entiendo que el item_id es único.
+		item_key = ndb.Key(urlsafe=item_id) #Entiendo que el item_id es unico.
 	except:
 		abort(404)
 	item_key.delete()
@@ -266,32 +264,31 @@ def wineBetweenPrices():
 
 def addWine():
 	if not request.json or not 'name' in request.json or not 'wine_type' in request.json:
-	abort(400)
+		abort(400)
 	name = request.json['name']
 	wine_type = request.json['type']
 	new_wine = Wines(
-		name = name
-		wine_type = wine_type
-		grade = request.json.get('grade', )	
-		size = request.json.get('size', )	
-		varietals = request.json.get('varietals', )	
-		do = request.json.get('do', )	
-		price = request.json.get('price', )
-		photo = request.json.get('photo', )
-	)
+		name = name,
+		wine_type = wine_type,
+		grade = request.json.get('grade', ),	
+		size = request.json.get('size', ),	
+		varietals = request.json.get('varietals', ),	
+		do = request.json.get('do', ),	
+		price = request.json.get('price', ),
+		photo = request.json.get('photo', ))
 	if wyne_type == 'Tinto':
 		new_red_wine = RedWines(
 			parent = new_wine.key,
-			cask = request.json.get('cask', )
+			cask = request.json.get('cask', ),
 			bottle = request.json.get('bottle', )
 		)
 	wine_id = new_wine.put()
 	new_red_wine.put()	
-	return make_response(jsonify({'created':wine_id.urlsafe())}), 201)
+	return make_response(jsonify({'created':wine_id.urlsafe()}), 201)
 
 def deleteWine(wine_id):
 	try:
-		wine_key = ndb.Key(urlsafe=wine_id) #Entiendo que el wine_id es único.
+		wine_key = ndb.Key(urlsafe=wine_id) #Entiendo que el wine_id es unico.
 	except:
 		abort(404)
 	wine_key.delete()
@@ -318,24 +315,24 @@ def manager_wine(wine_id):
 
 def getWineProperties(wine_id):
 	name = memcache.get(wine_id)
-	if name = None:
-		try:
-			wine_key = ndb.Key(urlsafe=wine_id)
-		except:
-			abort(404)
-		wine = wine_key.get()
-		name = wine.name
-		wine_type = wine.wine_type
-		grade = wine.grade	
-		size = wine.size	
-		varietals = wine.varietals
-		do = wine.do	
-		price = wine.price
-		photo = wine.photo
-		if wine_type == 'Tinto':
-			for red_wine in RedWines.query(ancestor=wine_key):
-				cask = red_wine.cask
-				bottle = red_wine.bottle
+	
+	try:
+		wine_key = ndb.Key(urlsafe=wine_id)
+	except:
+		abort(404)
+	wine = wine_key.get()
+	name = wine.name
+	wine_type = wine.wine_type
+	grade = wine.grade	
+	size = wine.size	
+	varietals = wine.varietals
+	do = wine.do	
+	price = wine.price
+	photo = wine.photo
+	if wine_type == 'Tinto':
+		for red_wine in RedWines.query(ancestor=wine_key):
+			cask = red_wine.cask
+			bottle = red_wine.bottle
 	return make_response(jsonify({'name':name, 'type':wine_type, 'grade':grade, 'size':size, 'varietals':varietals, 'do':do, 'price':price, 'photo':photo,'cask':cask, 'bottle':bottle}))
 
 def updateWine(wine_id):
@@ -345,7 +342,7 @@ def updateWine(wine_id):
 		abort(404)
 	wine = wine_key.get()
 	wine.name = request.json.get('name', wine.name)
-	wine.wine_type = request.json.get['type', wine.wine_type)
+	wine.wine_type = request.json.get('type', wine.wine_type)
 	wine.grade = request.json.get('grade', wine.grade)	
 	wine.size = request.json.get('size', wine.size)	
 	wine.varietals = request.json.get('varietals', wine.varietals)	
