@@ -6,7 +6,7 @@
 from google.appengine.ext import ndb
 from google.appengine.api import memcache
 from flask import Flask, jsonify, abort, make_response, request, url_for
-from dataTypes import Clients, Wines, Carts, Items, RedWines
+from dataTypes import Clients, Wines, Carts, Items
 
 
 app = Flask(__name__)
@@ -231,7 +231,7 @@ def manager_wines():
 	if request.method == 'POST':
 		return addWine()
 	elif request.method == 'DELETE':
-		return deleteWine()
+		return deleteWines()
 	elif request.method == 'GET':
 		return allWines()
 	else:
@@ -283,24 +283,14 @@ def addWine():
 		price = request.json.get('price', ),
 		photo = request.json.get('photo', ))
 	if wine_type == 'Tinto':
-		new_red_wine = RedWines(
-			parent = new_wine.key,
-			cask = request.json.get('cask', ),
-			bottle = request.json.get('bottle', )
-		)
-		new_red_wine.put()	
+		new_wine.cask = request.json.get('cask', ),
+		new_wine.bottle = request.json.get('bottle', )	
 	wine_id = new_wine.put()
 	return make_response(jsonify({'created':wine_id.urlsafe()}), 201)
 
-def deleteWine(wine_id):
-	try:
-		wine_key = ndb.Key(urlsafe=wine_id) #Entiendo que el wine_id es unico.
-	except:
-		abort(404)
-	wine_key.delete()
-	memcache.delete(wine_id)
-	return make_response(jsonify({'deleted':wine_id}), 200)
-
+def deleteWines():
+	Wines.delete()
+	Red
 
 def allWines():
 	return make_response(jsonify({'wines':Wines.all()}))
@@ -365,6 +355,14 @@ def updateWine(wine_id):
 	return make_response(jsonify({'updated':wine.to_dist()}), 200)
 
 	
+def deleteWine(wine_id):
+	try:
+		wine_key = ndb.Key(urlsafe=wine_id) #Entiendo que el wine_id es unico.
+	except:
+		abort(404)
+	wine_key.delete()
+	memcache.delete(wine_id)
+	return make_response(jsonify({'deleted':wine_id}), 200)
 	
 	
 	

@@ -70,6 +70,18 @@ updateItem:
 	#Un ejemplo sería el siguiente:
 	curl -X PUT -H "Content-Type: application/Json" -d '{"name":"esperanza"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICAuqiOCgw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ImCxIHQ2xpZW50cxiAgICAuqiOCgwLEgVDYXJ0cxiAgICAgLmECgw/items/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3I4CxIHQ2xpZW50cxiAgICAuqiOCgwLEgVDYXJ0cxiAgICAgLmECgwLEgVJdGVtcxiAgICAwPqTCgw
 
-addWine:
-	curl -X POST -H "Content-Type: application/Json" -d '{"name":"vinoBlanco", "type":"Blanco", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":100, "photo":"Gepeto" }'  https://natural-bus-135323.appspot.com/wines
+getWineByName:
+	curl -X GET 'https://natural-bus-135323.appspot.com/wines?name=vinoBlanco'
 	
+getWineByType:
+	curl -X GET 'https://natural-bus-135323.appspot.com/wines?type=Blanco'
+
+getWineBetweenPrices:
+	curl -X GET 'https://natural-bus-135323.appspot.com/wines?min=10&max=100'
+
+addWine:
+	#curl -X POST -H "Content-Type: application/Json" -d '{"name":"vinoRosado", "type":"Rosado", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":100, "photo":"Gepeto" }'  https://natural-bus-135323.appspot.com/wines
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"vinoTinto", "type":"Tinto", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":100, "photo":"Gepeto", "cask":"hola", "bottle":"botella"}'  https://natural-bus-135323.appspot.com/wines
+
+deleteWine:
+	curl -X DELETE -H "Content-Type: application/Json"  https://natural-bus-135323.appspot.com/wines/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ISCxIFV2luZXMYgICAgO2xgwsM
