@@ -5,21 +5,33 @@ from google.appengine.ext import ndb
 class Clients(ndb.Model):
 	email = ndb.StringProperty(required=True)
 	password = ndb.StringProperty(required=True)
-	carts = ndb.KeyProperty()
+	carts = ndb.KeyProperty(repeated = True)
 	address = ndb.StringProperty()
 	phone = ndb.StringProperty()
 
-	def cart2json(self):
+	def name2json(self):
 		return {"name":self.name}
 	
-	def queryToName(self):
-		name_carts = []
-		cart_query = Carts.query(ancestor=self.client_key)
-		for cart in cart_query:
-			cart.append(cart.cart2json())
-		return name_carts	
-	
+	def email2json(self):
+		return {"email":self.email}	
 
+	def queryToName(self, client_key):
+		name_carts = []
+		cart_query = Carts.query(ancestor=client_key)
+		for cart in cart_query:
+			cart.append(cart.name2json())
+		return name_carts
+	
+	@classmethod
+	def getName(self):
+		return self.toJSONlist(Clients.query())
+
+	@classmethod
+	def toJSONlist(self, entriesList):
+		auxJSON = []
+		for item in entriesList:
+			auxJSON.append(item.email2json())
+		return auxJSON
 
 class Carts(ndb.Model):
 	name = ndb.StringProperty(required=True)

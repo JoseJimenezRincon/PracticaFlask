@@ -6,7 +6,7 @@
 from google.appengine.ext import ndb
 from google.appengine.api import memcache
 from flask import Flask, jsonify, abort, make_response, request, url_for
-
+from dataTypes import Clients, Wines, Carts, Items, RedWines
 
 
 app = Flask(__name__)
@@ -37,7 +37,7 @@ def newClient():
 	client = Clients(
 		email = email,
 		password = password,
-		carts = request.json.get('carts', []),
+		carts = [],
 		address = request.json.get('address', ),
 		phone = request.json.get('phone', ))
 	client_id = client.put()
@@ -45,7 +45,7 @@ def newClient():
 	return make_response(jsonify({'created':client_id.urlsafe()}), 201)
 
 def getClients():
-	return make_response(jsonify({'clients':Clients.all()}), 200)
+	return make_response(jsonify({'clients':Clients.getName()}), 200)
 
 
 @app.route('/clients/<path:client_id>', methods = ['DELETE', 'PUT', 'GET'])
@@ -79,9 +79,9 @@ def updateClient(client_id):
         client.carts = request.json.get('carts', client.carts)
         client.address = request.json.get('address', client.address)
         client.phone = request.json.get('phone', client.phone)
-	client.put()
-	memcache.flush_all()
-	return make_response(jsonify({'updated':client.to_dict()}), 200)
+	client_id = client.put()
+	#memcache.flush_all()
+	return make_response(jsonify({'updated':client_id()}), 200)
 #
 def getClientDetails(client_id):
 	email = memcache.get(client_id)
@@ -92,7 +92,7 @@ def getClientDetails(client_id):
 	client = client_key.get()
 	email = client.email
 	password = client.password
-	carts =	 client.queryToName()
+	carts =	 client.queryToName(client_key)
 	address = client.address
 	phone = client.phone	
 	return make_response(jsonify({"email":email, "pass":password, "carts":carts, "address":address, "phone":phone}))
