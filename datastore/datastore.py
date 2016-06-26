@@ -80,9 +80,9 @@ def updateClient(client_id):
         client.address = request.json.get('address', client.address)
         client.phone = request.json.get('phone', client.phone)
 	client_id = client.put()
-	#memcache.flush_all()
-	return make_response(jsonify({'updated':client_id()}), 200)
-#
+	memcache.flush_all()
+	return make_response(jsonify({'updated':client.to_dict()}), 200)
+
 def getClientDetails(client_id):
 	email = memcache.get(client_id)
 	try:
@@ -122,14 +122,14 @@ def addCart(client_id):
 
 
 @app.route('/clients/<path:client_id>/carts/<path:cart_id>', methods = ['DELETE'])
-def manager_cart_delete(cart_id):
+def manager_cart_delete(client_id, cart_id):
 	if request.method == 'DELETE':
-		return deleteCart(cart_id)
+		return deleteCart(client_id, cart_id)
 	else:
 		abort(404)
 
 
-def deleteCart(cart_id):
+def deleteCart(client_id, cart_id):
 	try:
 		cart_key = ndb.Key(urlsafe=cart_id)
 	except:

@@ -9,9 +9,10 @@ class Clients(ndb.Model):
 	address = ndb.StringProperty()
 	phone = ndb.StringProperty()
 
+	
 	def name2json(self):
 		return {"name":self.name}
-	
+
 	def email2json(self):
 		return {"email":self.email}	
 
@@ -19,7 +20,7 @@ class Clients(ndb.Model):
 		name_carts = []
 		cart_query = Carts.query(ancestor=client_key)
 		for cart in cart_query:
-			cart.append(cart.name2json())
+			name_carts.append(cart.name2json())
 		return name_carts
 	
 	@classmethod
@@ -36,6 +37,9 @@ class Clients(ndb.Model):
 class Carts(ndb.Model):
 	name = ndb.StringProperty(required=True)
 	items = ndb.KeyProperty()
+
+	def name2json(self):
+		return {"name":self.name}
 
 	def item2json(self):
 		return {"name":self.name}
@@ -56,6 +60,8 @@ class Wines(ndb.Model):
 	price = ndb.FloatProperty()
 	photo = ndb.StringProperty()
 
+	def name2json(self):
+		return {"name":self.name}
 
 	def wine2json(self):
 		return {"name":self.name}
