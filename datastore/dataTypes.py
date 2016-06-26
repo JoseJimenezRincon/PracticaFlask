@@ -66,7 +66,7 @@ class Wines(ndb.Model):
 	def wine2json(self):
 		return {"name":self.name}
 
-	
+	@classmethod
 	def toJSONlist(self, entriesList):
 		auxJSON = []
 		for wine in entriesList:
@@ -79,6 +79,13 @@ class RedWines(ndb.Model):
 
 class Items(ndb.Model):
 	name = ndb.StringProperty(required=True)	
-
 	
-	
+	@classmethod
+	def toJSONlist(self, entriesList):
+		auxJSON = []
+		for item in entriesList:
+			auxJSON.append(item.item2json())
+		return auxJSON
+		
+	def item2json(self):
+		return {"name":self.name}

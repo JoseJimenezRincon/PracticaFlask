@@ -142,16 +142,16 @@ def deleteCart(client_id, cart_id):
 #-----------------------------CESTA-----------------------------#
 
 @app.route('/clients/<path:client_id>/carts/<path:cart_id>/items', methods = ['GET', 'POST'])
-def manager_items(cart_id):
+def manager_items(client_id ,cart_id):
 	if request.method == 'GET':
-		return getItems(cart_id)
+		return getItems(client_id, cart_id)
 	elif request.method == 'POST':
-		return addItem(cart_id)
+		return addItem(client_id, cart_id)
 	else:
 		abort(404)
 
 
-def addItem(cart_id):
+def addItem(client_id, cart_id):
 	if not request.json or not 'name' in request.json:
 		abort(400)
 	name = request.json['name']
@@ -167,28 +167,30 @@ def addItem(cart_id):
 	return make_response(jsonify({'added':item_id.urlsafe()}), 201)
 
 
-def getItems(cart_id):
+def getItems(client_id, cart_id):
 	auxJSON = []
 	try:
+		client_key = ndb.Key(urlsafe=client_id)
 		cart_key = ndb.Key(urlsafe=cart_id) #Entiendo que el cart_id es unico.
 	except:
 		abort(404)
 	ItemList = Items.query(ancestor=cart_key)
 	auxJSON = Items.toJSONlist(ItemList)
-	return make_response(jsonify({'items':auxJSON}), 200)
+	client = client_key.get()
+	return make_response(jsonify({'email_client':client.email,'items':auxJSON}), 200)
 
 
 @app.route('/clients/<path:client_id>/carts/<path:cart_id>/items/<path:item_id>', methods = ['DELETE', 'PUT'])
-def manager_item(item_id):
+def manager_item(client_id, cart_id, item_id):
 	if request.method == 'DELETE':
-		return delItem(item_id)
+		return delItem(client_id, cart_id, item_id)
 	elif request.method == 'PUT':
-		return updateItem(item_id)
+		return updateItem(client_id, cart_id, item_id)
 	else:
 		abort(404)
 	
 
-def delItem(item_id):
+def delItem(client_id, cart_id, item_id):
 	try:
 		item_key = ndb.Key(urlsafe=item_id) #Entiendo que el item_id es unico.
 	except:
@@ -198,16 +200,20 @@ def delItem(item_id):
 	return make_response(jsonify({'deleted':item_id}), 200)
 
 
-def updateItem(item_id):
+def updateItem(client_id, cart_id, item_id):
 	try:
+		client_key = ndb.Key(urlsafe=client_id)
+		cart_key = ndb.Key(urlsafe=cart_id)
 		item_key = ndb.Key(urlsafe=item_id)
 	except:
 		abort(404)
 	item = item_key.get()	
 	item.name = request.json.get('name', item.name)
 	item.put()
+	client = client_key.get()
+	cart = cart_key.get()
 	memcache.flush_all()
-	return make_response(jsonify({'updated':item.to_dict()}), 200)
+	return make_response(jsonify({'Client_Email':client.email, 'Cart_name':cart.name ,'updated':item.to_dict()}), 200)
 
 
 #-----------------------------WINES-------------------------------#
@@ -238,7 +244,7 @@ def wineByType():
 	wine_type = request.args.get('type')
 	auxJSON = []
 	winesByType = Wines.query(Wines.wine_type == wine_type)
-	auxJSON = Wines.toJSONList(winesByType)
+	auxJSON = Wines.toJSONlist(winesByType)
 	return make_response(jsonify({'winesbytype':auxJSON}), 200)
 
 
@@ -248,7 +254,7 @@ def wineByName():
 	name = request.args.get('name')
 	auxJSON = []
 	winesByName = Wines.query(Wines.name == name)
-	auxJSON = Wines.toJSONList(winesByName)
+	auxJSON = Wines.toJSONlist(winesByName)
 	return make_response(jsonify({'winesbyname':auxJSON}), 200)	
 
 def wineBetweenPrices():
@@ -257,13 +263,13 @@ def wineBetweenPrices():
 	minimum = float(request.args.get('min'))
 	maximum = float(request.args.get('max'))
 	auxJSON = [] 
-	winesBetweenPrices = Wines.query(Wines.price >= minimum, Wines.price < maximum)
-	auxJSON = wines.toJSONList(winesBetweenPrices)
+	winesBetweenPrices = Wines.query(Wines.price >= minimum, Wines.price <= maximum)
+	auxJSON = Wines.toJSONlist(winesBetweenPrices)
 	return make_response(jsonify({'winesbetweenprices':auxJSON}))
 
 
 def addWine():
-	if not request.json or not 'name' in request.json or not 'wine_type' in request.json:
+	if not request.json or not 'name' in request.json or not 'type' in request.json:
 		abort(400)
 	name = request.json['name']
 	wine_type = request.json['type']
@@ -276,14 +282,14 @@ def addWine():
 		do = request.json.get('do', ),	
 		price = request.json.get('price', ),
 		photo = request.json.get('photo', ))
-	if wyne_type == 'Tinto':
+	if wine_type == 'Tinto':
 		new_red_wine = RedWines(
 			parent = new_wine.key,
 			cask = request.json.get('cask', ),
 			bottle = request.json.get('bottle', )
 		)
+		new_red_wine.put()	
 	wine_id = new_wine.put()
-	new_red_wine.put()	
 	return make_response(jsonify({'created':wine_id.urlsafe()}), 201)
 
 def deleteWine(wine_id):

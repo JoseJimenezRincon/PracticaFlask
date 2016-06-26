@@ -40,4 +40,36 @@ deleteCart:
 	#curl -X DELETE https://natural-bus-135323.appspot.com/clients/ID_CLIENTE/carts/ID_CARTA
 	#
 	#Un ejemplo es el siguiente:
-	curl -X DELETE https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICAuqiOCgw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ImCxIHQ2xpZW50cxiAgICAuqiOCgwLEgVDYXJ0cxiAgICAgK6ZCgw
+	curl -X DELETE https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICAuqiOCgw/carts/
+
+addItem:
+	#Introduzca el id del cliente donde pone ID_CLIENTE y el id de la carta donde pone ID_CARTA:
+	#curl -X POST -H "Content-Type: application/Json" -d '{"name":"Rioja"}'  https://natural-bus-135323.appspot.com/clients/ID_CLIENTE/carts/ID_CARTA/items
+	#
+	#Un ejemplo sería el siguiente:
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Yugo"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICAuqiOCgw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ImCxIHQ2xpZW50cxiAgICAuqiOCgwLEgVDYXJ0cxiAgICAgLmECgw/items
+
+getItems:
+	#Introduzca el id del cliente donde pone ID_CLIENTE y el id de la carta donde pone ID_CARTA:
+	#curl -X GET -H "Content-Type: application/Json" -d '{"name":"Rioja"}'  https://natural-bus-135323.appspot.com/clients/ID_CLIENTE/carts/ID_CARTA/items
+	#
+	#Un ejemplo sería el siguiente:
+	curl -X GET -H "Content-Type: application/Json"  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICAuqiOCgw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ImCxIHQ2xpZW50cxiAgICAuqiOCgwLEgVDYXJ0cxiAgICAgLmECgw/items
+
+delItem:
+	#Introduzca el id del cliente donde pone ID_CLIENTE, el id de la carta donde pone ID_CARTA y el id del item donde pone ID_ITEM:
+	#curl -X DELETE -H "Content-Type: application/Json" -d '{"name":"Rioja"}'  https://natural-bus-135323.appspot.com/clients/ID_CLIENTE/carts/ID_CARTA/items/ID_ITEM
+	#
+	#Un ejemplo sería el siguiente:
+	curl -X DELETE -H "Content-Type: application/Json"  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICAuqiOCgw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ImCxIHQ2xpZW50cxiAgICAuqiOCgwLEgVDYXJ0cxiAgICAgLmECgw/items/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3I4CxIHQ2xpZW50cxiAgICAuqiOCgwLEgVDYXJ0cxiAgICAgLmECgwLEgVJdGVtcxiAgICAgNeMCgw
+
+updateItem:
+	#Introduzca el id del cliente donde pone ID_CLIENTE, el id de la carta donde pone ID_CARTA y el id del item donde pone ID_ITEM:
+	#curl -X UPDATE -H "Content-Type: application/Json" -d '{"name":"Rioja"}'  https://natural-bus-135323.appspot.com/clients/ID_CLIENTE/carts/ID_CARTA/items/ID_ITEM
+	#
+	#Un ejemplo sería el siguiente:
+	curl -X PUT -H "Content-Type: application/Json" -d '{"name":"esperanza"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICAuqiOCgw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ImCxIHQ2xpZW50cxiAgICAuqiOCgwLEgVDYXJ0cxiAgICAgLmECgw/items/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3I4CxIHQ2xpZW50cxiAgICAuqiOCgwLEgVDYXJ0cxiAgICAgLmECgwLEgVJdGVtcxiAgICAwPqTCgw
+
+addWine:
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"vinoBlanco", "type":"Blanco", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":100, "photo":"Gepeto" }'  https://natural-bus-135323.appspot.com/wines
+	
