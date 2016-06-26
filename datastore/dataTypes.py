@@ -90,6 +90,3 @@ class Items(ndb.Model):
 	def item2json(self):
 		return {"name":self.name}
 
-class RedWines(ndb.Model):	
-	cask = ndb.StringProperty()
-	bottle = ndb.StringProperty()

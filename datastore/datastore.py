@@ -6,7 +6,7 @@
 from google.appengine.ext import ndb
 from google.appengine.api import memcache
 from flask import Flask, jsonify, abort, make_response, request, url_for
-from dataTypes import Clients, Wines, Carts, Items, RedWines
+from dataTypes import Clients, Wines, Carts, Items
 
 
 app = Flask(__name__)
@@ -22,12 +22,14 @@ def not_found(error):
 
 #---------------------------------Cliente--------------------------------#
 
-@app.route('/clients', methods = ['GET', 'POST'])
+@app.route('/clients', methods = ['GET', 'POST', 'DELETE'])
 def manager_clients():
 	if request.method == 'POST':
 		return newClient()
 	elif request.method == 'GET':
 		return getClients()
+	elif request.method == 'DELETE':
+		return deleteClients()
 
 def newClient():
 	if not request.json or not 'email' in request.json or not 'pass' in request.json:
@@ -47,6 +49,11 @@ def newClient():
 def getClients():
 	return make_response(jsonify({'clients':Clients.getName()}), 200)
 
+def deleteClients():
+	for client in Clients.query():
+		client.key.delete()
+	return make_response('deleted')
+	
 
 @app.route('/clients/<path:client_id>', methods = ['DELETE', 'PUT', 'GET'])
 def manager_client(client_id):
