@@ -6,7 +6,7 @@
 from google.appengine.ext import ndb
 from google.appengine.api import memcache
 from flask import Flask, jsonify, abort, make_response, request, url_for
-from dataTypes import Clients, Wines, Carts, Items
+from dataTypes import Clients, Wines, Carts, Items, RedWines
 
 
 app = Flask(__name__)
@@ -283,22 +283,22 @@ def addWine():
 		price = request.json.get('price', ),
 		photo = request.json.get('photo', ))
 	if wine_type == 'Tinto':
-		new_wine.cask = request.json.get('cask', ),
+		new_wine.cask = request.json.get('cask', )
 		new_wine.bottle = request.json.get('bottle', )	
 	wine_id = new_wine.put()
 	return make_response(jsonify({'created':wine_id.urlsafe()}), 201)
 
 def deleteWines():
-	Wines.delete()
-	Red
+	for wines in Wines.query():
+		wines.key.delete()
+	return make_response('deleted')
 
 def allWines():
-	return make_response(jsonify({'wines':Wines.all()}))
+	return make_response(jsonify({'wines':Wines.getWinesName()}))
 
 
-@app.route('/wines/<int:wine_id>', methods = ['DELETE', 'PUT', 'GET'])
-def manager_wine(wine_id):
-	
+@app.route('/wines/<path:wine_id>', methods = ['DELETE', 'PUT', 'GET'])
+def manager_wine(wine_id):	
 	if request.method == 'GET':
 		return getWineProperties(wine_id)
 	elif request.method == 'PUT':
@@ -310,14 +310,13 @@ def manager_wine(wine_id):
 
 
 def getWineProperties(wine_id):
-	name = memcache.get(wine_id)
-	
+	name = memcache.get(wine_id)	
 	try:
 		wine_key = ndb.Key(urlsafe=wine_id)
+		wine = wine_key.get()
+		name = wine.name
 	except:
 		abort(404)
-	wine = wine_key.get()
-	name = wine.name
 	wine_type = wine.wine_type
 	grade = wine.grade	
 	size = wine.size	
@@ -325,12 +324,14 @@ def getWineProperties(wine_id):
 	do = wine.do	
 	price = wine.price
 	photo = wine.photo
-	if wine_type == 'Tinto':
-		for red_wine in RedWines.query(ancestor=wine_key):
-			cask = red_wine.cask
-			bottle = red_wine.bottle
-	return make_response(jsonify({'name':name, 'type':wine_type, 'grade':grade, 'size':size, 'varietals':varietals, 'do':do, 'price':price, 'photo':photo,'cask':cask, 'bottle':bottle}))
+	if wine_type == "Tinto":	
+		cask  = wine.cask
+		bottle = wine.bottle
+		return make_response(jsonify({'name':name, 'type':wine_type, 'grade':grade, 'size':size, 'varietals':varietals, 'do':do, 'price':price, 'photo':photo,'cask':cask, 'bottle':bottle}))
+	else:
+		return make_response(jsonify({'name':name, 'type':wine_type, 'grade':grade, 'size':size, 'varietals':varietals, 'do':do, 'price':price, 'photo':photo}))	
 
+	
 def updateWine(wine_id):
 	try:
 		wine_key = ndb.Key(urlsafe=wine_id)
@@ -345,14 +346,12 @@ def updateWine(wine_id):
 	wine.do = request.json.get('do', wine.do)	
 	wine.price = request.json.get('price', wine.price)
 	wine.photo = request.json.get('photo', wine.photo)
-	wine.put()
 	if wine.wine_type == 'Tinto':
-		for red_wine in RedWines.query(ancestor=wine_key):
-			red_wine.cask = request.json.get('cask', red_wine.cask)
-			red_wine.bottle = request.json.get('bottle', red_wine.bottle)
-		red_wine.put()
+		wine.cask = request.json.get('cask', wine.cask)
+		wine.bottle = request.json.get('bottle', wine.bottle)	
+	wine.put()
 	memcache.flush_all()	
-	return make_response(jsonify({'updated':wine.to_dist()}), 200)
+	return make_response(jsonify({'updated':wine.to_dict()}), 200)
 
 	
 def deleteWine(wine_id):

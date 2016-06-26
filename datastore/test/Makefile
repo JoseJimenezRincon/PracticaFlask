@@ -81,7 +81,20 @@ getWineBetweenPrices:
 
 addWine:
 	#curl -X POST -H "Content-Type: application/Json" -d '{"name":"vinoRosado", "type":"Rosado", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":100, "photo":"Gepeto" }'  https://natural-bus-135323.appspot.com/wines
-	curl -X POST -H "Content-Type: application/Json" -d '{"name":"vinoTinto", "type":"Tinto", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":100, "photo":"Gepeto", "cask":"hola", "bottle":"botella"}'  https://natural-bus-135323.appspot.com/wines
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"vinoTintoPrueba", "type":"Tinto", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":100, "photo":"Gepeto", "cask":"hola", "bottle":"botella"}'  https://natural-bus-135323.appspot.com/wines
+
+deleteWines:
+	curl -X DELETE -H "Content-Type: application/Json"  https://natural-bus-135323.appspot.com/wines
+
+
+allWines:
+	curl -X GET -H "Content-Type: application/Json" https://natural-bus-135323.appspot.com/wines
+
+getWineProperties:
+	curl -X GET -H "Content-Type: application/Json" https://natural-bus-135323.appspot.com/wines/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ISCxIFV2luZXMYgICAgJnOlAsM
+
+updateWine:
+	curl -X PUT -H "Content-Type: application/Json" -d '{"name":"vinoUpdated", "varietals":"ole", "cask":"adios"}'  https://natural-bus-135323.appspot.com/wines/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ISCxIFV2luZXMYgICAgPiWlQkM	
 
 deleteWine:
-	curl -X DELETE -H "Content-Type: application/Json"  https://natural-bus-135323.appspot.com/wines/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ISCxIFV2luZXMYgICAgO2xgwsM
+	curl -X DELETE -H "Content-Type: application/Json"  https://natural-bus-135323.appspot.com/wines/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ISCxIFV2luZXMYgICAgPiWlQkM

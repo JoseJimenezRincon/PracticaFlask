@@ -50,7 +50,7 @@ class Carts(ndb.Model):
 			auxJSON.append(item.item2json())
 		return auxJSON
 
-class Wines(ndb.Expando):
+class Wines(ndb.Model):
 	name = ndb.StringProperty(required=True)
 	wine_type = ndb.StringProperty(required=True)
 	grade = ndb.FloatProperty()
@@ -61,12 +61,14 @@ class Wines(ndb.Expando):
 	photo = ndb.StringProperty()
 	cask = ndb.StringProperty()
 	bottle = ndb.StringProperty()
-
-	def name2json(self):
-		return {"name":self.name}
+	
 
 	def wine2json(self):
 		return {"name":self.name}
+
+	@classmethod
+	def getWinesName(self):
+		return self.toJSONlist(Wines.query())
 
 	@classmethod
 	def toJSONlist(self, entriesList):
@@ -87,3 +89,7 @@ class Items(ndb.Model):
 		
 	def item2json(self):
 		return {"name":self.name}
+
+class RedWines(ndb.Model):	
+	cask = ndb.StringProperty()
+	bottle = ndb.StringProperty()
