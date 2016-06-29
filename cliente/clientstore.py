@@ -5,14 +5,8 @@ import json
 app = Flask(__name__)
 
 @app.route("/")
-def index():
-	name = request.args.get('name',"")
-	return WineByName(name)
-
-def WineByName(name):
-	wineSearched = requests.get('https://natural-bus-135323.appspot.com/wines?name='+name)
-	return render_template('template.html', wine=name)
+def start():
+	return render_template('template.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
-

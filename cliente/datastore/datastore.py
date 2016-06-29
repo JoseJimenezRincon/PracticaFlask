@@ -22,6 +22,37 @@ def not_found(error):
 
 #---------------------------------Cliente--------------------------------#
 
+@app.route('/', methods = ['GET'])
+def manager_search():
+	if request.args.get('ClientID') and request.args.get('CartID'):
+		return getCartItems()
+	elif request.args.get('ClientID'):
+		return getClientCarts()
+	else:
+		abort(404)	
+	
+def getClientCarts():
+	if not request.args.get('ClientID'):
+		abort(400)
+	client_id = request.args.get('ClientID')
+	client_key = ndb.Key(urlsafe=client_id)
+	client = client_key.get()
+	carts =	 client.queryToName(client_key)	
+	return make_response(jsonify({"carts":carts}))
+	
+def getCartItems():
+	if not request.args.get('ClientID') and request.args.get('CartID'):
+		abort(400)
+	client_id = request.args.get('ClientID')
+	cart_id = request.args.get('CartID')
+	client_key = ndb.Key(urlsafe=client_id)
+	cart_key = ndb.Key(urlsafe=cart_id)
+	ItemList = Items.query(ancestor=cart_key)
+	auxJSON = Items.toJSONlist(ItemList)
+	client = client_key.get()
+	cart = cart_key.get()	
+	return make_response(jsonify({'email_client':client.email, 'cart_name':cart.name ,"items":auxJSON}))
+
 @app.route('/clients', methods = ['GET', 'POST', 'DELETE'])
 def manager_clients():
 	if request.method == 'POST':
@@ -30,6 +61,8 @@ def manager_clients():
 		return getClients()
 	elif request.method == 'DELETE':
 		return deleteClients()
+	else:
+		abort(404)
 
 def newClient():
 	if not request.json or not 'email' in request.json or not 'pass' in request.json:
@@ -104,7 +137,7 @@ def getClientDetails(client_id):
 	phone = client.phone	
 	return make_response(jsonify({"email":email, "pass":password, "carts":carts, "address":address, "phone":phone}))
 
-
+	
 @app.route('/clients/<path:client_id>/carts', methods = ['POST'])
 def manager_cart_add(client_id):
 	if request.method == 'POST':

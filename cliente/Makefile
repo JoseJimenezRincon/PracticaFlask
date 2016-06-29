@@ -7,9 +7,9 @@ newClient:
 
 
 addCart:
-	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Blanco"}' 
-	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Navidad"}' 
-	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Nochevieja"}'  
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Blanco"}' https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICA3qWFCgw/carts 
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Navidad"}' https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICA3qWFCgw/carts
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Nochevieja"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICA3qWFCgw/carts
 
 addWine:	
 	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Rosa", "type":"Rosado", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":54, "photo":"Gepeto" }' https://natural-bus-135323.appspot.com/wines 
@@ -17,7 +17,9 @@ addWine:
 	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Black", "type":"Tinto", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":15, "photo":"Gepeto", "cask":"hola", "bottle":"botella"}'  https://natural-bus-135323.appspot.com/wines
 
 
-
+addItem:
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Yugo"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICAmZnNCAw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ImCxIHQ2xpZW50cxiAgICA3qWFCgwLEgVDYXJ0cxiAgICAgICACgw/items
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"DonSimon"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICAmZnNCAw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ImCxIHQ2xpZW50cxiAgICA3qWFCgwLEgVDYXJ0cxiAgICAgICACgw/items
 
 
 
