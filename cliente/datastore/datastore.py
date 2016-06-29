@@ -51,7 +51,7 @@ def getCartItems():
 	auxJSON = Items.toJSONlist(ItemList)
 	client = client_key.get()
 	cart = cart_key.get()	
-	return make_response(jsonify({'email_client':client.email, 'cart_name':cart.name ,"items":auxJSON}))
+	return make_response(jsonify({"items":auxJSON}))
 
 @app.route('/clients', methods = ['GET', 'POST', 'DELETE'])
 def manager_clients():
