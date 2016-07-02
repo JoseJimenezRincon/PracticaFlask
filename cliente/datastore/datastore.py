@@ -31,15 +31,6 @@ def manager_search():
         else:
                 abort(404)
 
-def getClientCarts():
-        if not request.args.get('ClientID'):
-                abort(400)
-        client_id = request.args.get('ClientID')
-        client_key = ndb.Key(Clients, ClientID)
-        client = client_key.get()
-        carts =  client.cartsANDitems(client_key)
-        return make_response(jsonify({"carts":carts}))
-
 def getCartItems():
         if not request.args.get('ClientID') and request.args.get('CartID'):
                 abort(400)
@@ -54,13 +45,23 @@ def getCartItems():
         return make_response(jsonify({"items":auxJSON}))
 
 @app.route('/', methods = ['GET', 'DELETE'])
-def nabo():
+def mainroute():
         if request.method == 'GET':
-                return make_response(jsonify({'carts':Carts.getName()}), 200)
+                return getClientCartsAndItems()
         else:
                 for cart in Carts.query():
                         cart.key.delete()
                 return make_response('deleted')
+
+
+def getClientCartsAndItems():
+        if not request.args.get('ClientID'):
+                abort(400)
+        client_id = request.args.get('ClientID')
+        client_key = ndb.Key(Clients, client_id)
+        client = client_key.get()
+        carts =  client.cartsANDitems(client_key)
+        return make_response(jsonify({"carts":carts}))
 
 
 @app.route('/clients', methods = ['GET', 'POST', 'DELETE'])
@@ -168,7 +169,7 @@ def addCart(client_id):
 		name = name,
 		items = [])
 	cart_id = new_cart.put()
-	return make_response(jsonify({'created':cart_id.key.id()}), 201)
+	return make_response(jsonify({'created':cart_id.urlsafe()}), 201)
 
 
 @app.route('/clients/<path:client_id>/carts/<path:cart_id>', methods = ['DELETE'])
@@ -206,7 +207,7 @@ def addItem(client_id, cart_id):
 		abort(400)
 	name = request.json['name']
 	try:
-		cart_key = ndb.Key(Carts, cart_id)
+		cart_key = ndb.Key(urlsafe= cart_id)
 	except:
 		abort(404)
 	new_item = Items(
@@ -214,8 +215,9 @@ def addItem(client_id, cart_id):
 		name = name
 	)
 	cart = cart_key.get()
-	cart.items.append(name)
 	item_id = new_item.put()
+	cart.items.append(item_id)
+	cart.put()
 	return make_response(jsonify({'added':item_id.urlsafe()}), 201)
 
 def getItems(client_id, cart_id):

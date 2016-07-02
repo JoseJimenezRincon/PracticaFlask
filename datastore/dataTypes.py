@@ -36,14 +36,19 @@ class Clients(ndb.Model):
 
 class Carts(ndb.Model):
 	name = ndb.StringProperty(required=True)
-	items = ndb.KeyProperty()
+	items = ndb.KeyProperty()(repeted = True)
+
+	@classmethod
+	def getName(self):
+		return self.toJSONlist(Carts.query())
 
 	def name2json(self):
 		return {"name":self.name}
 
 	def item2json(self):
 		return {"name":self.name}
-
+	
+	@classmethod
 	def toJSONlist(self, entriesList):
 		auxJSON = []
 		for item in entriesList:
