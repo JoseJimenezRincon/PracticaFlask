@@ -23,6 +23,14 @@ class Clients(ndb.Model):
 			name_carts.append(cart.name2json())
 		return name_carts
 	
+	def cartsANDitems(self, client_key):
+		name_carts = []
+		cart_query = Carts.query(ancestor=client_key)
+		for cart in cart_query:
+			name_carts.append(cart.name2json())
+			name_carts.append(cart.items2json())
+		return name_carts
+
 	@classmethod
 	def getName(self):
 		return self.toJSONlist(Clients.query())
@@ -36,14 +44,19 @@ class Clients(ndb.Model):
 
 class Carts(ndb.Model):
 	name = ndb.StringProperty(required=True)
-	items = ndb.KeyProperty()
+	items = ndb.KeyProperty(repeated = True)
+
+	@classmethod
+	def getName(self):
+		return self.toJSONlist(Carts.query())
 
 	def name2json(self):
 		return {"name":self.name}
 
 	def item2json(self):
-		return {"name":self.name}
-
+		return {"name":self.name, "items":self.items}
+	
+	@classmethod
 	def toJSONlist(self, entriesList):
 		auxJSON = []
 		for item in entriesList:

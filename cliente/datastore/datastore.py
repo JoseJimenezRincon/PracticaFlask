@@ -22,78 +22,87 @@ def not_found(error):
 
 #---------------------------------Cliente--------------------------------#
 
-@app.route('/', methods = ['GET'])
+@app.route('/search', methods = ['GET'])
 def manager_search():
-	if request.args.get('ClientID') and request.args.get('CartID'):
-		return getCartItems()
-	elif request.args.get('ClientID'):
-		return getClientCarts()
-	else:
-		abort(404)	
-	
+        if request.args.get('ClientID') and request.args.get('CartID'):
+                return getCartItems()
+        elif request.args.get('ClientID'):
+                return getClientCarts()
+        else:
+                abort(404)
+
 def getClientCarts():
-	if not request.args.get('ClientID'):
-		abort(400)
-	client_id = request.args.get('ClientID')
-	client_key = ndb.Key(urlsafe=client_id)
-	client = client_key.get()
-	carts =	 client.queryToName(client_key)	
-	return make_response(jsonify({"carts":carts}))
-	
+        if not request.args.get('ClientID'):
+                abort(400)
+        client_id = request.args.get('ClientID')
+        client_key = ndb.Key(Clients, ClientID)
+        client = client_key.get()
+        carts =  client.cartsANDitems(client_key)
+        return make_response(jsonify({"carts":carts}))
+
 def getCartItems():
-	if not request.args.get('ClientID') and request.args.get('CartID'):
-		abort(400)
-	client_id = request.args.get('ClientID')
-	cart_id = request.args.get('CartID')
-	client_key = ndb.Key(urlsafe=client_id)
-	cart_key = ndb.Key(urlsafe=cart_id)
-	ItemList = Items.query(ancestor=cart_key)
-	auxJSON = Items.toJSONlist(ItemList)
-	client = client_key.get()
-	cart = cart_key.get()	
-	return make_response(jsonify({"items":auxJSON}))
+        if not request.args.get('ClientID') and request.args.get('CartID'):
+                abort(400)
+        client_id = request.args.get('ClientID')
+        cart_id = request.args.get('CartID')
+        client_key = ndb.Key(urlsafe=client_id)
+        cart_key = ndb.Key(urlsafe=cart_id)
+        ItemList = Items.query(ancestor=cart_key)
+        auxJSON = Items.toJSONlist(ItemList)
+        client = client_key.get()
+        cart = cart_key.get()
+        return make_response(jsonify({"items":auxJSON}))
+
+@app.route('/', methods = ['GET', 'DELETE'])
+def nabo():
+        if request.method == 'GET':
+                return make_response(jsonify({'carts':Carts.getName()}), 200)
+        else:
+                for cart in Carts.query():
+                        cart.key.delete()
+                return make_response('deleted')
+
 
 @app.route('/clients', methods = ['GET', 'POST', 'DELETE'])
 def manager_clients():
-	if request.method == 'POST':
-		return newClient()
-	elif request.method == 'GET':
-		return getClients()
-	elif request.method == 'DELETE':
-		return deleteClients()
-	else:
-		abort(404)
+        if request.method == 'POST':
+                return newClient()
+        elif request.method == 'GET':
+                return getClients()
+        elif request.method == 'DELETE':
+                return deleteClients()
 
 def newClient():
-	if not request.json or not 'email' in request.json or not 'pass' in request.json:
-		abort(400)
-	email = request.json['email']
-	password = request.json['pass']
-	client = Clients(
-		email = email,
-		password = password,
-		carts = [],
-		address = request.json.get('address', ),
-		phone = request.json.get('phone', ))
-	client_id = client.put()
-	memcache.flush_all()
-	return make_response(jsonify({'created':client_id.urlsafe()}), 201)
+        if not request.json or not 'email' in request.json or not 'pass' in request.json:
+                abort(400)
+        email = request.json['email']
+        password = request.json['pass']
+        client = Clients(
+                email = email,
+                password = password,
+                carts = [],
+                address = request.json.get('address', ),
+                phone = request.json.get('phone', ),
+                id = email)
+        client.put()
+        memcache.flush_all()
+        return make_response(jsonify({'created':client.key.id()}), 201)
 
 def getClients():
-	return make_response(jsonify({'clients':Clients.getName()}), 200)
+        return make_response(jsonify({'clients':Clients.getName()}), 200)
 
 def deleteClients():
-	for client in Clients.query():
-		client.key.delete()
-	return make_response('deleted')
-	
+        for client in Clients.query():
+                client.key.delete()
+        return make_response('deleted')
+
 
 @app.route('/clients/<path:client_id>', methods = ['DELETE', 'PUT', 'GET'])
 def manager_client(client_id):
-	if request.method == 'DELETE':
-		return deleteClient(client_id)
-	elif request.method == 'PUT':
-		return updateClient(client_id)
+        if request.method == 'DELETE':
+                return deleteClient(client_id)
+        elif request.method == 'PUT':
+                return updateClient(client_id)
 	elif request.method == 'GET':
 		return getClientDetails(client_id)
 	else:
@@ -101,7 +110,7 @@ def manager_client(client_id):
 
 def deleteClient(client_id):
 	try:
-		client_key = ndb.Key(urlsafe=client_id)
+		client_key = ndb.Key(Clients, client_id)
 	except:
 		abort(404)
 	client_key.delete()
@@ -110,7 +119,7 @@ def deleteClient(client_id):
 
 def updateClient(client_id):
 	try:
-		client_key = ndb.Key(urlsafe=client_id)
+		client_key = ndb.Key(Clients, client_id)
 	except:
 		abort(404)
 	client = client_key.get()
@@ -126,7 +135,7 @@ def updateClient(client_id):
 def getClientDetails(client_id):
 	email = memcache.get(client_id)
 	try:
-		client_key = ndb.Key(urlsafe=client_id)
+		client_key = ndb.Key(Clients, client_id)
 	except:
 		abort(404)
 	client = client_key.get()
@@ -137,7 +146,7 @@ def getClientDetails(client_id):
 	phone = client.phone	
 	return make_response(jsonify({"email":email, "pass":password, "carts":carts, "address":address, "phone":phone}))
 
-	
+
 @app.route('/clients/<path:client_id>/carts', methods = ['POST'])
 def manager_cart_add(client_id):
 	if request.method == 'POST':
@@ -151,14 +160,15 @@ def addCart(client_id):
 		abort(400)
 	name = request.json['name']
 	try:
-		client_key = ndb.Key(urlsafe=client_id)
+		client_key = ndb.Key(Clients, client_id)
 	except:
 		abort(404)
 	new_cart = Carts(
 		parent = client_key,
-		name = name)
+		name = name,
+		items = [])
 	cart_id = new_cart.put()
-	return make_response(jsonify({'created':cart_id.urlsafe()}), 201)
+	return make_response(jsonify({'created':cart_id.key.id()}), 201)
 
 
 @app.route('/clients/<path:client_id>/carts/<path:cart_id>', methods = ['DELETE'])
@@ -171,7 +181,7 @@ def manager_cart_delete(client_id, cart_id):
 
 def deleteCart(client_id, cart_id):
 	try:
-		cart_key = ndb.Key(urlsafe=cart_id)
+		cart_key = ndb.Key(Carts, cart_id)
 	except:
 		abort(404)
 	cart_key.delete()
@@ -196,22 +206,23 @@ def addItem(client_id, cart_id):
 		abort(400)
 	name = request.json['name']
 	try:
-		cart_key = ndb.Key(urlsafe=cart_id)
+		cart_key = ndb.Key(Carts, cart_id)
 	except:
 		abort(404)
 	new_item = Items(
 		parent = cart_key,
 		name = name
 	)
+	cart = cart_key.get()
+	cart.items.append(name)
 	item_id = new_item.put()
 	return make_response(jsonify({'added':item_id.urlsafe()}), 201)
-
 
 def getItems(client_id, cart_id):
 	auxJSON = []
 	try:
-		client_key = ndb.Key(urlsafe=client_id)
-		cart_key = ndb.Key(urlsafe=cart_id) #Entiendo que el cart_id es unico.
+		client_key = ndb.Key(Clients, client_id)
+		cart_key = ndb.Key(Carts, cart_id) #Entiendo que el cart_id es unico.
 	except:
 		abort(404)
 	ItemList = Items.query(ancestor=cart_key)
@@ -232,7 +243,7 @@ def manager_item(client_id, cart_id, item_id):
 
 def delItem(client_id, cart_id, item_id):
 	try:
-		item_key = ndb.Key(urlsafe=item_id) #Entiendo que el item_id es unico.
+		item_key = ndb.Key(Items, item_id) #Entiendo que el item_id es unico.
 	except:
 		abort(404)
 	item_key.delete()
@@ -242,9 +253,9 @@ def delItem(client_id, cart_id, item_id):
 
 def updateItem(client_id, cart_id, item_id):
 	try:
-		client_key = ndb.Key(urlsafe=client_id)
-		cart_key = ndb.Key(urlsafe=cart_id)
-		item_key = ndb.Key(urlsafe=item_id)
+		client_key = ndb.Key(Clients, client_id)
+		cart_key = ndb.Key(Carts, cart_id)
+		item_key = ndb.Key(Items, item_id)
 	except:
 		abort(404)
 	item = item_key.get()	

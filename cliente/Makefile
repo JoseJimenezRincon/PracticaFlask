@@ -7,9 +7,9 @@ newClient:
 
 
 addCart:
-	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Botellon"}' https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICA3qWFCgw/carts 
-	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Inem"}' https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICA3qWFCgw/carts
-	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Verano"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICA3qWFCgw/carts
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Botellon"}' https://natural-bus-135323.appspot.com/clients/email@gmail.com/carts 
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Inem"}' https://natural-bus-135323.appspot.com/clients/email@gmail.com/carts
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Verano"}'  https://natural-bus-135323.appspot.com/clients/email@gmail.com/carts
 
 addWine:	
 	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Rosa", "type":"Rosado", "grade":12.4 , "size":75, "varietals":"nsnc", "do":false, "price":54, "photo":"Gepeto" }' https://natural-bus-135323.appspot.com/wines 
@@ -18,7 +18,7 @@ addWine:
 
 
 addItem:
-	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Yugo"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICA3qWFCgw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3ImCxIHQ2xpZW50cxiAgICA3qWFCgwLEgVDYXJ0cxiAgICAgNeMCgw/items
+	curl -X POST -H "Content-Type: application/Json" -d '{"name":"Yugo"}'  https://natural-bus-135323.appspot.com/clients/email2@gmail.com/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IuCxIHQ2xpZW50cyIPZW1haWxAZ21haWwuY29tDAsSBUNhcnRzGICAgICAgIAKDA/items
 	#curl -X POST -H "Content-Type: application/Json" -d '{"name":"vinoBlanco"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICA3qWFCgw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3I4CxIHQ2xpZW50cxiAgICA3qWFCgwLEgVDYXJ0cxiAgICAgICACgwLEgVJdGVtcxiAgICAgPKICQw/items
 	#curl -X POST -H "Content-Type: application/Json" -d '{"name":"White"}'  https://natural-bus-135323.appspot.com/clients/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3IUCxIHQ2xpZW50cxiAgICA3qWFCgw/carts/ahRzfm5hdHVyYWwtYnVzLTEzNTMyM3I4CxIHQ2xpZW50cxiAgICA3qWFCgwLEgVDYXJ0cxiAgICAgICACgwLEgVJdGVtcxiAgICAgPKICQw/items
 
